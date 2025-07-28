@@ -1,0 +1,44 @@
+---
+description: Project description
+globs:
+alwaysApply: true
+---
+
+-- App: 
+"PlantPal – Instant Plant Care & Diagnosis"
+An app that uses image recognition to:
+
+Identify plants from photos (flowers, houseplants, crops).
+
+Diagnose plant health issues (disease, pests, watering problems) from leaf photos.
+
+Suggest care instructions (light, water, soil, pruning).
+
+Track your plants with reminders and a digital garden log.
+
+-- Tech:
+Frontend: Flutter (cross-platform)
+Backend: Supabase + vercel
+Image Recognition: gemini 2.5 flash
+
+You must use:
+import { GoogleGenAI } from '@google/genai';
+
+const contents = [{
+    role: 'user',
+    parts: [
+        {text: ``},
+        {inlineData: {data: base64, mimeType: `image/jpeg | adapt to the image input`}},
+    ]
+}]
+const config = {
+    generationConfig: {
+    temperature: 0.3,
+    maxOutputTokens: power 2 number
+    }
+};
+const response = await ai.models.generateContentStream({
+    model: 'gemini-2.5-flash',
+    config,
+    contents,
+});
