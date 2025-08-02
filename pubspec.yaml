@@ -15,12 +15,12 @@ dependencies:
   # State Management
   flutter_riverpod: ^2.4.9
   riverpod_annotation: ^2.3.3
-  flutter_hooks: ^0.20.3
+  flutter_hooks: ^0.20.5
   hooks_riverpod: ^2.4.9
   
   # Code Generation
-  freezed_annotation: ^2.4.1
-  json_annotation: ^4.8.1
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
   
   # Backend & Database
   supabase_flutter: ^2.0.2
@@ -33,7 +33,7 @@ dependencies:
   cached_network_image: ^3.3.0
   
   # Notifications
-  flutter_local_notifications: ^16.3.0
+  flutter_local_notifications: ^16.3.3
   
   # HTTP & API
   http: ^1.1.2
@@ -52,28 +52,23 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.1
+  flutter_lints: ^3.0.2
   
   # Code Generation
   build_runner: ^2.4.7
-  riverpod_generator: ^2.3.0
-  freezed: ^2.4.1
-  json_serializable: ^6.7.1
+  riverpod_generator: ^2.3.10
+  freezed: ^2.5.7
+  json_serializable: ^6.9.0
+
+# Force newer versions to fix compatibility issues
+dependency_overrides:
+  custom_lint_core: ^0.6.0
+  custom_lint: ^0.6.0
+  analyzer: ^6.11.0
 
 flutter:
   uses-material-design: true
   
   assets:
     - assets/images/
-    - assets/icons/
-
-  fonts:
-    - family: Inter
-      fonts:
-        - asset: assets/fonts/Inter-Regular.ttf
-        - asset: assets/fonts/Inter-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Inter-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Inter-Bold.ttf
-          weight: 700 
+    - assets/icons/ 

@@ -37,7 +37,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const PlantsScreen(),
         routes: [
           GoRoute(
-            path: '/:plantId',
+            path: ':plantId',
             name: 'plant-detail',
             builder: (context, state) {
               final plantId = state.pathParameters['plantId']!;

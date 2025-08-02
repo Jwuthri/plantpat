@@ -137,12 +137,15 @@ CREATE TABLE care_reminders (
 
 ### 5. Generate Code
 ```bash
+flutter create . --platforms=ios
+
 flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
 ### 6. Run the App
 ```bash
 flutter run
+or flutter run -d 00008110-00014D4E340A801E
 ```
 
 ## 🎯 Usage

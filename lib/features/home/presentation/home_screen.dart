@@ -26,42 +26,80 @@ class HomeScreen extends ConsumerWidget {
               // App Bar
               SliverAppBar(
                 floating: true,
-                backgroundColor: Colors.transparent,
+                pinned: false,
+                expandedHeight: 120,
+                backgroundColor: Theme.of(context).colorScheme.surface,
                 elevation: 0,
-                title: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Good ${_getTimeOfDay()}!',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                    ),
-                    const Text(
-                      'PlantPal',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.plantGreen,
+                scrolledUnderElevation: 1,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppTheme.plantGreen.withOpacity(0.05),
+                          Theme.of(context).colorScheme.surface,
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
                       ),
                     ),
-                  ],
-                ),
-                actions: [
-                  IconButton(
-                    onPressed: () => context.go('/reminders'),
-                    icon: const Icon(
-                      Icons.notifications_outlined,
-                      color: AppTheme.plantGreen,
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Good ${_getTimeOfDay()}!',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: AppTheme.onSurfaceVariant(context),
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'PlantPal',
+                                style: TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.plantGreen,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surface,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Theme.of(context).colorScheme.outline,
+                                ),
+                              ),
+                              child: IconButton(
+                                onPressed: () => context.go('/reminders'),
+                                icon: Icon(
+                                  Icons.notifications_outlined,
+                                  color: AppTheme.plantGreen,
+                                  size: 24,
+                                ),
+                                tooltip: 'Reminders',
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
 
               // Stats Overview
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                   child: plantsAsync.when(
                     data: (plants) => StatsOverview(plants: plants),
                     loading: () => const _LoadingStatsCard(),
@@ -73,7 +111,7 @@ class HomeScreen extends ConsumerWidget {
               // Quick Actions
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -81,6 +119,7 @@ class HomeScreen extends ConsumerWidget {
                         'Quick Actions',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                       ),
                       const SizedBox(height: 16),
@@ -148,7 +187,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
 
-              // Bottom spacing
+              // Bottom spacing for FAB
               const SliverToBoxAdapter(
                 child: SizedBox(height: 100),
               ),
@@ -161,7 +200,11 @@ class HomeScreen extends ConsumerWidget {
         backgroundColor: AppTheme.plantGreen,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.camera_alt),
-        label: const Text('Scan Plant'),
+        label: const Text(
+          'Scan Plant',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        elevation: 4,
       ),
     );
   }
@@ -176,6 +219,7 @@ class HomeScreen extends ConsumerWidget {
   void _showCameraOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -188,17 +232,17 @@ class HomeScreen extends ConsumerWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: Theme.of(context).colorScheme.outline,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'What would you like to do?',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
             ),
             const SizedBox(height: 24),
             _CameraOptionTile(
@@ -237,13 +281,32 @@ class _LoadingStatsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 120,
+      margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline,
+          width: 1,
+        ),
       ),
-      child: const Center(
-        child: CircularProgressIndicator(
-          color: AppTheme.plantGreen,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              color: AppTheme.plantGreen,
+              strokeWidth: 2,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Loading your garden...',
+              style: TextStyle(
+                color: AppTheme.onSurfaceVariant(context),
+                fontSize: 14,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -262,18 +325,37 @@ class _LoadingPlantsSection extends StatelessWidget {
           'Recent Plants',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
         ),
         const SizedBox(height: 16),
         Container(
           height: 200,
           decoration: BoxDecoration(
-            color: Colors.grey[200],
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline,
+              width: 1,
+            ),
           ),
-          child: const Center(
-            child: CircularProgressIndicator(
-              color: AppTheme.plantGreen,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(
+                  color: AppTheme.plantGreen,
+                  strokeWidth: 2,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Loading plants...',
+                  style: TextStyle(
+                    color: AppTheme.onSurfaceVariant(context),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -291,19 +373,51 @@ class _ErrorCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.red[50],
+        color: AppTheme.errorColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.red[200]!),
+        border: Border.all(
+          color: AppTheme.errorColor.withOpacity(0.3),
+          width: 1,
+        ),
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline, color: Colors.red[600]),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.errorColor.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.error_outline,
+              color: AppTheme.errorColor,
+              size: 20,
+            ),
+          ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              'Error: $error',
-              style: TextStyle(color: Colors.red[800]),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Something went wrong',
+                  style: TextStyle(
+                    color: AppTheme.errorColor,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  error,
+                  style: TextStyle(
+                    color: AppTheme.errorColor.withOpacity(0.8),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -335,7 +449,10 @@ class _CameraOptionTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[200]!),
+          color: Theme.of(context).colorScheme.surface,
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outline,
+          ),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -360,9 +477,10 @@ class _CameraOptionTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -370,7 +488,7 @@ class _CameraOptionTile extends StatelessWidget {
                     subtitle,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey[600],
+                      color: AppTheme.onSurfaceVariant(context),
                     ),
                   ),
                 ],
@@ -379,7 +497,7 @@ class _CameraOptionTile extends StatelessWidget {
             Icon(
               Icons.arrow_forward_ios,
               size: 16,
-              color: Colors.grey[400],
+              color: AppTheme.onSurfaceVariant(context),
             ),
           ],
         ),

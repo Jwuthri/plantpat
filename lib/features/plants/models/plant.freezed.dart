@@ -24,14 +24,15 @@ mixin _$Plant {
   String get name => throw _privateConstructorUsedError;
   String get scientificName => throw _privateConstructorUsedError;
   String get commonName => throw _privateConstructorUsedError;
-  String get category => throw _privateConstructorUsedError;
+  String get category =>
+      throw _privateConstructorUsedError; // houseplant, outdoor, herb, flower, etc.
   String get imageUrl => throw _privateConstructorUsedError;
   String get description => throw _privateConstructorUsedError;
   PlantCareInfo get careInfo => throw _privateConstructorUsedError;
   List<String> get tags => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
-  bool get isDeleted => throw _privateConstructorUsedError;
+  bool get isActive => throw _privateConstructorUsedError;
   bool get isFavorite => throw _privateConstructorUsedError;
   String? get userNotes => throw _privateConstructorUsedError;
   DateTime? get lastWatered => throw _privateConstructorUsedError;
@@ -39,8 +40,12 @@ mixin _$Plant {
   DateTime? get nextWateringDate => throw _privateConstructorUsedError;
   DateTime? get nextFertilizingDate => throw _privateConstructorUsedError;
 
+  /// Serializes this Plant to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of Plant
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $PlantCopyWith<Plant> get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -61,7 +66,7 @@ abstract class $PlantCopyWith<$Res> {
       List<String> tags,
       DateTime createdAt,
       DateTime updatedAt,
-      bool isDeleted,
+      bool isActive,
       bool isFavorite,
       String? userNotes,
       DateTime? lastWatered,
@@ -82,6 +87,8 @@ class _$PlantCopyWithImpl<$Res, $Val extends Plant>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of Plant
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -96,7 +103,7 @@ class _$PlantCopyWithImpl<$Res, $Val extends Plant>
     Object? tags = null,
     Object? createdAt = null,
     Object? updatedAt = null,
-    Object? isDeleted = null,
+    Object? isActive = null,
     Object? isFavorite = null,
     Object? userNotes = freezed,
     Object? lastWatered = freezed,
@@ -149,9 +156,9 @@ class _$PlantCopyWithImpl<$Res, $Val extends Plant>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
-      isDeleted: null == isDeleted
-          ? _value.isDeleted
-          : isDeleted // ignore: cast_nullable_to_non_nullable
+      isActive: null == isActive
+          ? _value.isActive
+          : isActive // ignore: cast_nullable_to_non_nullable
               as bool,
       isFavorite: null == isFavorite
           ? _value.isFavorite
@@ -180,6 +187,8 @@ class _$PlantCopyWithImpl<$Res, $Val extends Plant>
     ) as $Val);
   }
 
+  /// Create a copy of Plant
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $PlantCareInfoCopyWith<$Res> get careInfo {
@@ -208,7 +217,7 @@ abstract class _$$PlantImplCopyWith<$Res> implements $PlantCopyWith<$Res> {
       List<String> tags,
       DateTime createdAt,
       DateTime updatedAt,
-      bool isDeleted,
+      bool isActive,
       bool isFavorite,
       String? userNotes,
       DateTime? lastWatered,
@@ -228,6 +237,8 @@ class __$$PlantImplCopyWithImpl<$Res>
       _$PlantImpl _value, $Res Function(_$PlantImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of Plant
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -242,7 +253,7 @@ class __$$PlantImplCopyWithImpl<$Res>
     Object? tags = null,
     Object? createdAt = null,
     Object? updatedAt = null,
-    Object? isDeleted = null,
+    Object? isActive = null,
     Object? isFavorite = null,
     Object? userNotes = freezed,
     Object? lastWatered = freezed,
@@ -295,9 +306,9 @@ class __$$PlantImplCopyWithImpl<$Res>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
-      isDeleted: null == isDeleted
-          ? _value.isDeleted
-          : isDeleted // ignore: cast_nullable_to_non_nullable
+      isActive: null == isActive
+          ? _value.isActive
+          : isActive // ignore: cast_nullable_to_non_nullable
               as bool,
       isFavorite: null == isFavorite
           ? _value.isFavorite
@@ -342,7 +353,7 @@ class _$PlantImpl implements _Plant {
       required final List<String> tags,
       required this.createdAt,
       required this.updatedAt,
-      this.isDeleted = false,
+      this.isActive = true,
       this.isFavorite = false,
       this.userNotes,
       this.lastWatered,
@@ -364,6 +375,7 @@ class _$PlantImpl implements _Plant {
   final String commonName;
   @override
   final String category;
+// houseplant, outdoor, herb, flower, etc.
   @override
   final String imageUrl;
   @override
@@ -384,7 +396,7 @@ class _$PlantImpl implements _Plant {
   final DateTime updatedAt;
   @override
   @JsonKey()
-  final bool isDeleted;
+  final bool isActive;
   @override
   @JsonKey()
   final bool isFavorite;
@@ -401,7 +413,7 @@ class _$PlantImpl implements _Plant {
 
   @override
   String toString() {
-    return 'Plant(id: $id, name: $name, scientificName: $scientificName, commonName: $commonName, category: $category, imageUrl: $imageUrl, description: $description, careInfo: $careInfo, tags: $tags, createdAt: $createdAt, updatedAt: $updatedAt, isDeleted: $isDeleted, isFavorite: $isFavorite, userNotes: $userNotes, lastWatered: $lastWatered, lastFertilized: $lastFertilized, nextWateringDate: $nextWateringDate, nextFertilizingDate: $nextFertilizingDate)';
+    return 'Plant(id: $id, name: $name, scientificName: $scientificName, commonName: $commonName, category: $category, imageUrl: $imageUrl, description: $description, careInfo: $careInfo, tags: $tags, createdAt: $createdAt, updatedAt: $updatedAt, isActive: $isActive, isFavorite: $isFavorite, userNotes: $userNotes, lastWatered: $lastWatered, lastFertilized: $lastFertilized, nextWateringDate: $nextWateringDate, nextFertilizingDate: $nextFertilizingDate)';
   }
 
   @override
@@ -428,8 +440,8 @@ class _$PlantImpl implements _Plant {
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
                 other.updatedAt == updatedAt) &&
-            (identical(other.isDeleted, isDeleted) ||
-                other.isDeleted == isDeleted) &&
+            (identical(other.isActive, isActive) ||
+                other.isActive == isActive) &&
             (identical(other.isFavorite, isFavorite) ||
                 other.isFavorite == isFavorite) &&
             (identical(other.userNotes, userNotes) ||
@@ -444,7 +456,7 @@ class _$PlantImpl implements _Plant {
                 other.nextFertilizingDate == nextFertilizingDate));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -459,7 +471,7 @@ class _$PlantImpl implements _Plant {
       const DeepCollectionEquality().hash(_tags),
       createdAt,
       updatedAt,
-      isDeleted,
+      isActive,
       isFavorite,
       userNotes,
       lastWatered,
@@ -467,7 +479,9 @@ class _$PlantImpl implements _Plant {
       nextWateringDate,
       nextFertilizingDate);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of Plant
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$PlantImplCopyWith<_$PlantImpl> get copyWith =>
@@ -494,7 +508,7 @@ abstract class _Plant implements Plant {
       required final List<String> tags,
       required final DateTime createdAt,
       required final DateTime updatedAt,
-      final bool isDeleted,
+      final bool isActive,
       final bool isFavorite,
       final String? userNotes,
       final DateTime? lastWatered,
@@ -513,7 +527,7 @@ abstract class _Plant implements Plant {
   @override
   String get commonName;
   @override
-  String get category;
+  String get category; // houseplant, outdoor, herb, flower, etc.
   @override
   String get imageUrl;
   @override
@@ -527,7 +541,7 @@ abstract class _Plant implements Plant {
   @override
   DateTime get updatedAt;
   @override
-  bool get isDeleted;
+  bool get isActive;
   @override
   bool get isFavorite;
   @override
@@ -540,8 +554,11 @@ abstract class _Plant implements Plant {
   DateTime? get nextWateringDate;
   @override
   DateTime? get nextFertilizingDate;
+
+  /// Create a copy of Plant
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$PlantImplCopyWith<_$PlantImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -552,11 +569,16 @@ PlantCareInfo _$PlantCareInfoFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$PlantCareInfo {
-  String get lightRequirement => throw _privateConstructorUsedError;
-  String get wateringFrequency => throw _privateConstructorUsedError;
-  String get soilType => throw _privateConstructorUsedError;
-  String get humidity => throw _privateConstructorUsedError;
-  String get temperature => throw _privateConstructorUsedError;
+  String get lightRequirement =>
+      throw _privateConstructorUsedError; // low, medium, high, bright indirect
+  String get wateringFrequency =>
+      throw _privateConstructorUsedError; // daily, weekly, bi-weekly, monthly
+  String get soilType =>
+      throw _privateConstructorUsedError; // well-draining, moist, dry, sandy, etc.
+  String get humidity =>
+      throw _privateConstructorUsedError; // low, medium, high
+  String get temperature =>
+      throw _privateConstructorUsedError; // cool, moderate, warm
   List<String> get fertilizingSchedule => throw _privateConstructorUsedError;
   List<String> get commonProblems => throw _privateConstructorUsedError;
   List<String> get careInstructions => throw _privateConstructorUsedError;
@@ -564,8 +586,12 @@ mixin _$PlantCareInfo {
   String? get pruningInfo => throw _privateConstructorUsedError;
   List<String>? get toxicityWarnings => throw _privateConstructorUsedError;
 
+  /// Serializes this PlantCareInfo to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of PlantCareInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $PlantCareInfoCopyWith<PlantCareInfo> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -600,6 +626,8 @@ class _$PlantCareInfoCopyWithImpl<$Res, $Val extends PlantCareInfo>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of PlantCareInfo
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -694,6 +722,8 @@ class __$$PlantCareInfoImplCopyWithImpl<$Res>
       _$PlantCareInfoImpl _value, $Res Function(_$PlantCareInfoImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of PlantCareInfo
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -783,15 +813,21 @@ class _$PlantCareInfoImpl implements _PlantCareInfo {
 
   @override
   final String lightRequirement;
+// low, medium, high, bright indirect
   @override
   final String wateringFrequency;
+// daily, weekly, bi-weekly, monthly
   @override
   final String soilType;
+// well-draining, moist, dry, sandy, etc.
   @override
   final String humidity;
+// low, medium, high
   @override
   final String temperature;
+// cool, moderate, warm
   final List<String> _fertilizingSchedule;
+// cool, moderate, warm
   @override
   List<String> get fertilizingSchedule {
     if (_fertilizingSchedule is EqualUnmodifiableListView)
@@ -866,7 +902,7 @@ class _$PlantCareInfoImpl implements _PlantCareInfo {
                 .equals(other._toxicityWarnings, _toxicityWarnings));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -882,7 +918,9 @@ class _$PlantCareInfoImpl implements _PlantCareInfo {
       pruningInfo,
       const DeepCollectionEquality().hash(_toxicityWarnings));
 
-  @JsonKey(ignore: true)
+  /// Create a copy of PlantCareInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$PlantCareInfoImplCopyWith<_$PlantCareInfoImpl> get copyWith =>
@@ -914,15 +952,15 @@ abstract class _PlantCareInfo implements PlantCareInfo {
       _$PlantCareInfoImpl.fromJson;
 
   @override
-  String get lightRequirement;
+  String get lightRequirement; // low, medium, high, bright indirect
   @override
-  String get wateringFrequency;
+  String get wateringFrequency; // daily, weekly, bi-weekly, monthly
   @override
-  String get soilType;
+  String get soilType; // well-draining, moist, dry, sandy, etc.
   @override
-  String get humidity;
+  String get humidity; // low, medium, high
   @override
-  String get temperature;
+  String get temperature; // cool, moderate, warm
   @override
   List<String> get fertilizingSchedule;
   @override
@@ -935,8 +973,11 @@ abstract class _PlantCareInfo implements PlantCareInfo {
   String? get pruningInfo;
   @override
   List<String>? get toxicityWarnings;
+
+  /// Create a copy of PlantCareInfo
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$PlantCareInfoImplCopyWith<_$PlantCareInfoImpl> get copyWith =>
       throw _privateConstructorUsedError;
-} 
+}

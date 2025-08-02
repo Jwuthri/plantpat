@@ -28,37 +28,93 @@ class CameraScreen extends ConsumerWidget {
         : 'Scan leaves to diagnose health issues';
 
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
-        title: Text(title),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         leading: IconButton(
           onPressed: () {
             cameraNotifier.clearResults();
             context.go('/home');
           },
-          icon: const Icon(Icons.close),
+          icon: Icon(
+            Icons.close,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          tooltip: 'Close',
         ),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        elevation: 0,
+        scrolledUnderElevation: 1,
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Text(
-                subtitle,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header section with gradient
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.surface,
+                    Theme.of(context).colorScheme.background,
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
-              const SizedBox(height: 24),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isIdentify 
+                              ? AppTheme.lightGreen.withOpacity(0.1)
+                              : AppTheme.successColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          isIdentify ? Icons.search : Icons.health_and_safety,
+                          color: isIdentify ? AppTheme.lightGreen : AppTheme.successColor,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          subtitle,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.onSurfaceVariant(context),
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
 
-              // Camera Actions or Results
-              Expanded(
+            // Content area
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: _buildContent(context, cameraState, cameraNotifier),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -120,46 +176,80 @@ class _LoadingWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isIdentify = action == 'identify';
+    final primaryColor = isIdentify ? AppTheme.lightGreen : AppTheme.successColor;
     
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // Modern loading container
           Container(
-            width: 120,
-            height: 120,
+            width: 140,
+            height: 140,
             decoration: BoxDecoration(
-              color: AppTheme.plantGreen.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(60),
+              gradient: RadialGradient(
+                colors: [
+                  primaryColor.withOpacity(0.1),
+                  primaryColor.withOpacity(0.05),
+                  Colors.transparent,
+                ],
+                stops: const [0.5, 0.8, 1.0],
+              ),
+              borderRadius: BorderRadius.circular(70),
+              border: Border.all(
+                color: primaryColor.withOpacity(0.2),
+                width: 2,
+              ),
             ),
-            child: const Center(
-              child: CircularProgressIndicator(
-                color: AppTheme.plantGreen,
-                strokeWidth: 3,
+            child: Center(
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(40),
+                ),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: primaryColor,
+                    strokeWidth: 3,
+                    backgroundColor: primaryColor.withOpacity(0.1),
+                  ),
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
+          
+          // Loading text
           Text(
             isIdentify ? 'Identifying plant...' : 'Analyzing plant health...',
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.plantGreen,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Theme.of(context).colorScheme.onSurface,
+              letterSpacing: -0.3,
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            isIdentify 
-                ? 'Our AI is recognizing the plant species'
-                : 'Checking for diseases and health issues',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
+          
+          // Subtitle
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Text(
+              isIdentify 
+                  ? 'Our AI is recognizing the plant species and gathering care information'
+                  : 'Checking for diseases, pests, and health issues',
+              style: TextStyle(
+                fontSize: 15,
+                color: AppTheme.onSurfaceVariant(context),
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 40),
+          
           // Processing steps
           _ProcessingSteps(isIdentify: isIdentify),
         ],
@@ -226,57 +316,85 @@ class _ProcessingStepsState extends State<_ProcessingSteps>
   @override
   Widget build(BuildContext context) {
     final steps = widget.isIdentify ? _identifySteps : _diagnoseSteps;
+    final primaryColor = widget.isIdentify ? AppTheme.lightGreen : AppTheme.successColor;
     
-    return Column(
-      children: List.generate(steps.length, (index) {
-        final isActive = index <= _currentStep;
-        final isCompleted = index < _currentStep;
-        
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Row(
-            children: [
-              Container(
-                width: 16,
-                height: 16,
-                decoration: BoxDecoration(
-                  color: isCompleted 
-                      ? AppTheme.successColor 
-                      : isActive 
-                          ? AppTheme.plantGreen 
-                          : Colors.grey[300],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: isCompleted
-                    ? const Icon(
-                        Icons.check,
-                        size: 12,
-                        color: Colors.white,
-                      )
-                    : isActive
-                        ? const SizedBox(
-                            width: 8,
-                            height: 8,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : null,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                steps[index],
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isActive ? Colors.black87 : Colors.grey[500],
-                  fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
-                ),
-              ),
-            ],
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Processing steps',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
           ),
-        );
-      }),
+          const SizedBox(height: 16),
+          ...List.generate(steps.length, (index) {
+            final isActive = index <= _currentStep;
+            final isCompleted = index < _currentStep;
+            
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: isCompleted 
+                          ? AppTheme.successColor 
+                          : isActive 
+                              ? primaryColor 
+                              : Theme.of(context).colorScheme.outline,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: isCompleted
+                        ? const Icon(
+                            Icons.check,
+                            size: 14,
+                            color: Colors.white,
+                          )
+                        : isActive
+                            ? Container(
+                                margin: const EdgeInsets.all(4),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                  backgroundColor: Colors.transparent,
+                                ),
+                              )
+                            : null,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      steps[index],
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: isActive 
+                            ? Theme.of(context).colorScheme.onSurface
+                            : AppTheme.onSurfaceVariant(context),
+                        fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
     );
   }
 }
@@ -298,40 +416,68 @@ class _ErrorWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red[400],
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Oops! Something went wrong',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
+            // Error icon with modern design
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: AppTheme.errorColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(50),
+                border: Border.all(
+                  color: AppTheme.errorColor.withOpacity(0.2),
+                  width: 2,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              error,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
+              child: Icon(
+                Icons.error_outline,
+                size: 48,
+                color: AppTheme.errorColor,
               ),
-              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
+            
+            Text(
+              'Oops! Something went wrong',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onSurface,
+                letterSpacing: -0.3,
+              ),
+            ),
+            const SizedBox(height: 12),
+            
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                error,
+                style: TextStyle(
+                  fontSize: 15,
+                  color: AppTheme.onSurfaceVariant(context),
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 32),
+            
+            // Retry button with modern design
             ElevatedButton.icon(
               onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
+              icon: const Icon(Icons.refresh, size: 20),
+              label: const Text(
+                'Try Again',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.plantGreen,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
+                  horizontal: 32,
+                  vertical: 16,
                 ),
+                elevation: 2,
+                shadowColor: AppTheme.plantGreen.withOpacity(0.3),
               ),
             ),
           ],

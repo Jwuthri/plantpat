@@ -17,7 +17,7 @@ class Plant with _$Plant {
     required List<String> tags,
     required DateTime createdAt,
     required DateTime updatedAt,
-    @Default(false) bool isDeleted,
+    @Default(true) bool isActive,
     @Default(false) bool isFavorite,
     String? userNotes,
     DateTime? lastWatered,

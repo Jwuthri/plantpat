@@ -6,8 +6,6 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/services/ai_service.dart';
 import '../../plants/models/plant.dart';
-import '../../plants/providers/plants_provider.dart';
-import '../../diagnosis/models/diagnosis.dart';
 
 class CameraController extends StateNotifier<CameraState> {
   CameraController(this.ref) : super(const CameraState());

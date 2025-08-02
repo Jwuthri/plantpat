@@ -3,198 +3,240 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
-import '../../features/plants/models/plant.dart';
-import '../../features/diagnosis/models/diagnosis.dart';
-
 class AIService {
-  static const String _geminiApiKey = 'YOUR_GEMINI_API_KEY_HERE';
-  static const String _baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
+  static const String _backendUrl = 'http://localhost:3000'; // TODO: Make this configurable
   
   final Dio _dio = Dio();
   final Logger _logger = Logger();
 
   Future<PlantIdentificationResult> identifyPlant(Uint8List imageBytes) async {
+    _logger.i('📱 [FLUTTER-AI] 🌱 Starting plant identification...', {
+      'imageSize': '${(imageBytes.length / 1024).toStringAsFixed(2)}KB',
+      'timestamp': DateTime.now().toIso8601String(),
+    });
+    
     try {
       final base64Image = base64Encode(imageBytes);
+      _logger.d('📱 [FLUTTER-AI] 📷 Image encoded to base64, length: ${base64Image.length}');
       
       final requestBody = {
-        'contents': [
-          {
-            'parts': [
-              {
-                'text': '''Analyze this plant image and provide detailed identification information. 
-                
-Return a JSON response with the following structure:
-{
-  "name": "Common name of the plant",
-  "scientificName": "Scientific name",
-  "category": "houseplant/outdoor/herb/flower/tree/succulent",
-  "confidence": 0.95,
-  "description": "Brief description of the plant",
-  "careInfo": {
-    "lightRequirement": "bright indirect/low/medium/high",
-    "wateringFrequency": "weekly/bi-weekly/monthly",
-    "soilType": "well-draining/moist/sandy",
-    "humidity": "low/medium/high",
-    "temperature": "cool/moderate/warm",
-    "fertilizingSchedule": ["monthly during growing season"],
-    "commonProblems": ["overwatering", "spider mites"],
-    "careInstructions": ["water when soil is dry", "provide bright indirect light"]
-  },
-  "tags": ["indoor", "beginner-friendly", "air-purifying"]
-}
-
-Be specific and accurate. If you're not confident about the identification, indicate that in the confidence score.'''
-              },
-              {
-                'inline_data': {
-                  'mime_type': 'image/jpeg',
-                  'data': base64Image
-                }
-              }
-            ]
-          }
-        ],
-        'generationConfig': {
-          'temperature': 0.3,
-          'maxOutputTokens': 2048 * 2
-        }
+        'imageData': base64Image,
+        'imageType': 'image/jpeg',
       };
 
+      _logger.i('📱 [FLUTTER-AI] 🚀 Calling backend API: $_backendUrl/api/ai/identify');
+      final startTime = DateTime.now();
+      
       final response = await _dio.post(
-        '$_baseUrl?key=$_geminiApiKey',
+        '$_backendUrl/api/ai/identify',
         data: requestBody,
         options: Options(
           headers: {'Content-Type': 'application/json'},
         ),
       );
 
+      final responseTime = DateTime.now().difference(startTime).inMilliseconds;
+      _logger.i('📱 [FLUTTER-AI] ✅ Backend response received', {
+        'statusCode': response.statusCode,
+        'responseTime': '${responseTime}ms'
+      });
+
       if (response.statusCode == 200) {
-        final content = response.data['candidates'][0]['content']['parts'][0]['text'];
-        final jsonContent = _extractJsonFromText(content);
-        final result = PlantIdentificationResult.fromJson(jsonContent);
+        final responseData = response.data;
+        _logger.d('📱 [FLUTTER-AI] 📋 Processing backend response...', {
+          'success': responseData['success'],
+          'hasData': responseData['data'] != null,
+          'processingTime': responseData['processingTime']
+        });
         
-        _logger.i('Plant identification successful: ${result.name}');
-        return result;
+        if (responseData['success'] == true) {
+          final aiResult = responseData['data'];
+          
+          // Convert backend response to Flutter model
+          final result = PlantIdentificationResult(
+            name: aiResult['plantIdentification']['species'] ?? '',
+            scientificName: aiResult['plantIdentification']['scientificName'] ?? '',
+            category: _mapCategoryFromBackend(aiResult),
+            confidence: (aiResult['plantIdentification']['confidence'] ?? 0.0).toDouble(),
+            description: _buildDescriptionFromBackend(aiResult),
+            careInfo: _mapCareInfoFromBackend(aiResult['careInstructions'] ?? {}),
+            tags: _generateTagsFromBackend(aiResult),
+          );
+          
+          _logger.i('📱 [FLUTTER-AI] ✅ Plant identification successful!', {
+            'species': result.name,
+            'confidence': result.confidence,
+            'category': result.category,
+            'backendProcessingTime': responseData['processingTime']
+          });
+          return result;
+        } else {
+          _logger.e('📱 [FLUTTER-AI] ❌ Backend returned error: ${responseData['error']}');
+          throw Exception('Backend error: ${responseData['error']}');
+        }
       } else {
+        _logger.e('📱 [FLUTTER-AI] ❌ HTTP error: ${response.statusCode}');
         throw Exception('AI service error: ${response.statusCode}');
       }
     } catch (e) {
-      _logger.e('Error identifying plant: $e');
+      _logger.e('📱 [FLUTTER-AI] ❌ Plant identification failed: $e');
       rethrow;
     }
   }
 
-  Future<PlantDiagnosisResult> diagnosePlantHealth(Uint8List imageBytes) async {
+  Future<PlantDiagnosisResult> diagnosePlantHealth(Uint8List imageBytes, {Map<String, dynamic>? plantContext}) async {
+    _logger.i('📱 [FLUTTER-AI] 🩺 Starting plant health diagnosis...', {
+      'imageSize': '${(imageBytes.length / 1024).toStringAsFixed(2)}KB',
+      'hasPlantContext': plantContext != null,
+      'timestamp': DateTime.now().toIso8601String(),
+    });
+    
     try {
       final base64Image = base64Encode(imageBytes);
+      _logger.d('📱 [FLUTTER-AI] 📷 Image encoded to base64, length: ${base64Image.length}');
       
       final requestBody = {
-        'contents': [
-          {
-            'parts': [
-              {
-                'text': '''Analyze this plant image for health issues and provide a detailed diagnosis.
-
-Return a JSON response with the following structure:
-{
-  "overallHealthScore": 0.85,
-  "detectedIssues": [
-    {
-      "name": "Yellowing leaves",
-      "description": "Older leaves showing yellow discoloration",
-      "type": "watering_issue",
-      "severity": "moderate",
-      "confidence": 0.9,
-      "symptoms": ["yellow leaves", "drooping"],
-      "cause": "Overwatering or nutrient deficiency",
-      "prevention": "Check soil moisture before watering",
-      "treatments": [
-        {
-          "title": "Adjust watering schedule",
-          "description": "Reduce watering frequency",
-          "urgency": "within_week",
-          "steps": ["Check soil moisture", "Water only when top inch is dry"],
-          "estimatedTime": "Ongoing",
-          "requiredMaterials": ["Moisture meter (optional)"]
-        }
-      ]
-    }
-  ],
-  "generalRecommendations": [
-    "Monitor soil moisture regularly",
-    "Ensure proper drainage"
-  ]
-}
-
-Valid types: disease, pest, nutrient_deficiency, watering_issue, environmental, physical_damage, fungal, bacterial, viral
-Valid severities: low, moderate, high, critical
-Valid urgencies: immediate, within_24h, within_week, routine
-
-If the plant appears healthy, return an empty detectedIssues array and high health score.'''
-              },
-              {
-                'inline_data': {
-                  'mime_type': 'image/jpeg',
-                  'data': base64Image
-                }
-              }
-            ]
-          }
-        ],
-        'generationConfig': {
-          'temperature': 0.3,
-          'maxOutputTokens': 2048 * 2
-        }
+        'imageData': base64Image,
+        'imageType': 'image/jpeg',
+        'plantContext': plantContext,
       };
 
+      _logger.i('📱 [FLUTTER-AI] 🚀 Calling backend API: $_backendUrl/api/ai/diagnose');
+      final startTime = DateTime.now();
+      
       final response = await _dio.post(
-        '$_baseUrl?key=$_geminiApiKey',
+        '$_backendUrl/api/ai/diagnose',
         data: requestBody,
         options: Options(
           headers: {'Content-Type': 'application/json'},
         ),
       );
 
+      final responseTime = DateTime.now().difference(startTime).inMilliseconds;
+      _logger.i('📱 [FLUTTER-AI] ✅ Backend response received', {
+        'statusCode': response.statusCode,
+        'responseTime': '${responseTime}ms'
+      });
+
       if (response.statusCode == 200) {
-        final content = response.data['candidates'][0]['content']['parts'][0]['text'];
-        final jsonContent = _extractJsonFromText(content);
-        final result = PlantDiagnosisResult.fromJson(jsonContent);
+        final responseData = response.data;
+        _logger.d('📱 [FLUTTER-AI] 📋 Processing diagnosis response...', {
+          'success': responseData['success'],
+          'hasData': responseData['data'] != null,
+          'processingTime': responseData['processingTime']
+        });
         
-        _logger.i('Plant diagnosis successful: ${result.detectedIssues.length} issues found');
-        return result;
+        if (responseData['success'] == true) {
+          final aiResult = responseData['data'];
+          
+          // Convert backend response to Flutter model
+          final result = PlantDiagnosisResult(
+            overallHealthScore: _mapHealthScoreFromBackend(aiResult['healthAssessment']),
+            detectedIssues: _mapIssuesFromBackend(aiResult['healthAssessment']['issues'] ?? []),
+            generalRecommendations: List<String>.from(aiResult['careRecommendations']['preventive'] ?? []),
+          );
+          
+          _logger.i('📱 [FLUTTER-AI] ✅ Plant diagnosis successful!', {
+            'healthScore': result.overallHealthScore,
+            'issuesFound': result.detectedIssues.length,
+            'recommendations': result.generalRecommendations.length,
+            'backendProcessingTime': responseData['processingTime']
+          });
+          return result;
+        } else {
+          _logger.e('📱 [FLUTTER-AI] ❌ Backend returned error: ${responseData['error']}');
+          throw Exception('Backend error: ${responseData['error']}');
+        }
       } else {
+        _logger.e('📱 [FLUTTER-AI] ❌ HTTP error: ${response.statusCode}');
         throw Exception('AI service error: ${response.statusCode}');
       }
     } catch (e) {
-      _logger.e('Error diagnosing plant: $e');
+      _logger.e('📱 [FLUTTER-AI] ❌ Plant diagnosis failed: $e');
       rethrow;
     }
   }
 
-  Map<String, dynamic> _extractJsonFromText(String text) {
-    try {
-      // Find JSON content between ```json and ``` or just find the JSON object
-      final jsonRegex = RegExp(r'```json\s*(.*?)\s*```', dotAll: true);
-      final match = jsonRegex.firstMatch(text);
-      
-      if (match != null) {
-        return json.decode(match.group(1)!);
-      }
-      
-      // Try to find JSON object directly
-      final objectRegex = RegExp(r'\{.*\}', dotAll: true);
-      final objectMatch = objectRegex.firstMatch(text);
-      
-      if (objectMatch != null) {
-        return json.decode(objectMatch.group(0)!);
-      }
-      
-      throw Exception('No valid JSON found in response');
-    } catch (e) {
-      _logger.e('Error parsing JSON from AI response: $e');
-      throw Exception('Failed to parse AI response');
+  // Helper methods to map backend response to Flutter models
+  String _mapCategoryFromBackend(Map<String, dynamic> aiResult) {
+    final species = aiResult['plantIdentification']?['species']?.toString().toLowerCase() ?? '';
+    final commonNames = aiResult['plantIdentification']?['commonNames'] ?? [];
+    
+    // Simple category mapping based on plant name
+    if (species.contains('succulent') || species.contains('cactus')) return 'succulent';
+    if (species.contains('herb') || species.contains('basil') || species.contains('mint')) return 'herb';
+    if (species.contains('tree') || species.contains('oak') || species.contains('maple')) return 'tree';
+    if (species.contains('flower') || species.contains('rose') || species.contains('tulip')) return 'flower';
+    
+    return 'houseplant'; // Default
+  }
+
+  String _buildDescriptionFromBackend(Map<String, dynamic> aiResult) {
+    final species = aiResult['plantIdentification']?['species'] ?? 'Unknown plant';
+    final scientificName = aiResult['plantIdentification']?['scientificName'] ?? '';
+    
+    return scientificName.isNotEmpty 
+      ? '$species ($scientificName) is a beautiful plant with specific care requirements.'
+      : '$species is a beautiful plant with specific care requirements.';
+  }
+
+  Map<String, dynamic> _mapCareInfoFromBackend(Map<String, dynamic> careInstructions) {
+    return {
+      'lightRequirement': careInstructions['lighting']?['type'] ?? 'medium',
+      'wateringFrequency': careInstructions['watering']?['frequency'] ?? 'weekly',
+      'soilType': 'well-draining',
+      'humidity': careInstructions['humidity']?['level'] ?? 'medium',
+      'temperature': 'moderate',
+      'fertilizingSchedule': [careInstructions['fertilizing']?['frequency'] ?? 'monthly'],
+      'commonProblems': ['overwatering', 'inadequate light'],
+      'careInstructions': [
+        careInstructions['watering']?['notes'] ?? 'Water when soil is dry',
+        careInstructions['lighting']?['notes'] ?? 'Provide adequate light',
+      ],
+    };
+  }
+
+  List<String> _generateTagsFromBackend(Map<String, dynamic> aiResult) {
+    final tags = <String>['indoor'];
+    final confidence = aiResult['plantIdentification']?['confidence'] ?? 0.0;
+    
+    if (confidence > 0.8) tags.add('easy-to-identify');
+    if (confidence > 0.9) tags.add('beginner-friendly');
+    
+    return tags;
+  }
+
+  double _mapHealthScoreFromBackend(Map<String, dynamic> healthAssessment) {
+    final overallHealth = healthAssessment['overallHealth']?.toString().toLowerCase() ?? 'unknown';
+    
+    switch (overallHealth) {
+      case 'healthy': return 0.9;
+      case 'minor_issues': return 0.7;
+      case 'major_issues': return 0.4;
+      case 'critical': return 0.2;
+      default: return 0.5;
     }
+  }
+
+  List<Map<String, dynamic>> _mapIssuesFromBackend(List<dynamic> issues) {
+    return issues.map((issue) => {
+      'name': issue['type'] ?? 'Unknown issue',
+      'description': issue['description'] ?? '',
+      'type': issue['type'] ?? 'unknown',
+      'severity': issue['severity'] ?? 'moderate',
+      'confidence': issue['confidence'] ?? 0.5,
+      'symptoms': [],
+      'cause': issue['description'] ?? '',
+      'prevention': 'Monitor plant regularly',
+      'treatments': (issue['recommendations'] as List?)?.map((rec) => {
+        'title': rec.toString(),
+        'description': rec.toString(),
+        'urgency': 'routine',
+        'steps': [rec.toString()],
+        'estimatedTime': 'As needed',
+        'requiredMaterials': [],
+      }).toList() ?? [],
+    }).toList();
   }
 }
 

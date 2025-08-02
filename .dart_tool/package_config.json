@@ -195,15 +195,15 @@
     },
     {
       "name": "custom_lint",
-      "rootUri": "file:///Users/julienwuthrich/.pub-cache/hosted/pub.dev/custom_lint-0.5.11",
+      "rootUri": "file:///Users/julienwuthrich/.pub-cache/hosted/pub.dev/custom_lint-0.6.4",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     },
     {
       "name": "custom_lint_core",
-      "rootUri": "file:///Users/julienwuthrich/.pub-cache/hosted/pub.dev/custom_lint_core-0.5.14",
+      "rootUri": "file:///Users/julienwuthrich/.pub-cache/hosted/pub.dev/custom_lint_core-0.6.10",
       "packageUri": "lib/",
-      "languageVersion": "2.19"
+      "languageVersion": "3.0"
     },
     {
       "name": "dart_style",

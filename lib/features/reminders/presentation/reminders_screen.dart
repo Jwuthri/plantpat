@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
 
@@ -11,6 +12,11 @@ class RemindersScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Care Reminders'),
+        leading: IconButton(
+          onPressed: () => context.go('/home'),
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back to Home',
+        ),
       ),
       body: const Center(
         child: Column(

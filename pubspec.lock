@@ -15,7 +15,7 @@ packages:
     source: sdk
     version: "0.3.3"
   analyzer:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       name: analyzer
       sha256: "1f14db053a8c23e260789e9b0980fa27f2680dd640932cae5e1137cce0e46e1e"
@@ -255,21 +255,21 @@ packages:
     source: hosted
     version: "3.0.6"
   custom_lint:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       name: custom_lint
-      sha256: "22bd87a362f433ba6aae127a7bac2838645270737f3721b180916d7c5946cb5d"
+      sha256: "7c0aec12df22f9082146c354692056677f1e70bc43471644d1fdb36c6fdda799"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.11"
+    version: "0.6.4"
   custom_lint_core:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       name: custom_lint_core
-      sha256: "2952837953022de610dacb464f045594854ced6506ac7f76af28d4a6490e189b"
+      sha256: "76a4046cc71d976222a078a8fd4a65e198b70545a8d690a75196dd14f08510f6"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.14"
+    version: "0.6.10"
   dart_style:
     dependency: transitive
     description:

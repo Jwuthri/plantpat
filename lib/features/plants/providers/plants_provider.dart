@@ -26,7 +26,7 @@ class PlantsNotifier extends StateNotifier<AsyncValue<List<Plant>>> {
       final response = await _supabase
           .from('plants')
           .select()
-          .eq('is_deleted', false)
+          .eq('is_active', true)
           .order('created_at', ascending: false);
 
       return (response as List)
@@ -65,7 +65,7 @@ class PlantsNotifier extends StateNotifier<AsyncValue<List<Plant>>> {
     try {
       await _supabase
           .from('plants')
-          .update({'is_deleted': true})
+          .update({'is_active': false})
           .eq('id', plantId);
       _initialize(); // Refresh the state
     } catch (e) {
