@@ -22,23 +22,32 @@ Plant _$PlantFromJson(Map<String, dynamic> json) {
 mixin _$Plant {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
-  String get scientificName => throw _privateConstructorUsedError;
-  String get commonName => throw _privateConstructorUsedError;
-  String get category =>
-      throw _privateConstructorUsedError; // houseplant, outdoor, herb, flower, etc.
-  String get imageUrl => throw _privateConstructorUsedError;
-  String get description => throw _privateConstructorUsedError;
-  PlantCareInfo get careInfo => throw _privateConstructorUsedError;
+  @JsonKey(name: 'scientific_name')
+  String? get scientificName => throw _privateConstructorUsedError;
+  @JsonKey(name: 'common_names')
+  List<String> get commonNames => throw _privateConstructorUsedError;
+  String? get species => throw _privateConstructorUsedError;
+  List<String> get images => throw _privateConstructorUsedError;
+  String? get description => throw _privateConstructorUsedError;
+  @JsonKey(name: 'care_instructions')
+  Map<String, dynamic>? get careInstructions =>
+      throw _privateConstructorUsedError;
   List<String> get tags => throw _privateConstructorUsedError;
-  DateTime get createdAt => throw _privateConstructorUsedError;
-  DateTime get updatedAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'created_at')
+  DateTime? get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'updated_at')
+  DateTime? get updatedAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'is_active')
   bool get isActive => throw _privateConstructorUsedError;
   bool get isFavorite => throw _privateConstructorUsedError;
-  String? get userNotes => throw _privateConstructorUsedError;
-  DateTime? get lastWatered => throw _privateConstructorUsedError;
-  DateTime? get lastFertilized => throw _privateConstructorUsedError;
-  DateTime? get nextWateringDate => throw _privateConstructorUsedError;
-  DateTime? get nextFertilizingDate => throw _privateConstructorUsedError;
+  @JsonKey(name: 'profile_id')
+  String? get profileId => throw _privateConstructorUsedError;
+  double? get confidence => throw _privateConstructorUsedError;
+  @JsonKey(name: 'health_status')
+  Map<String, dynamic>? get healthStatus => throw _privateConstructorUsedError;
+  Map<String, dynamic>? get location => throw _privateConstructorUsedError;
+  @JsonKey(name: 'care_history')
+  List<dynamic> get careHistory => throw _privateConstructorUsedError;
 
   /// Serializes this Plant to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -57,24 +66,23 @@ abstract class $PlantCopyWith<$Res> {
   $Res call(
       {String id,
       String name,
-      String scientificName,
-      String commonName,
-      String category,
-      String imageUrl,
-      String description,
-      PlantCareInfo careInfo,
+      @JsonKey(name: 'scientific_name') String? scientificName,
+      @JsonKey(name: 'common_names') List<String> commonNames,
+      String? species,
+      List<String> images,
+      String? description,
+      @JsonKey(name: 'care_instructions')
+      Map<String, dynamic>? careInstructions,
       List<String> tags,
-      DateTime createdAt,
-      DateTime updatedAt,
-      bool isActive,
+      @JsonKey(name: 'created_at') DateTime? createdAt,
+      @JsonKey(name: 'updated_at') DateTime? updatedAt,
+      @JsonKey(name: 'is_active') bool isActive,
       bool isFavorite,
-      String? userNotes,
-      DateTime? lastWatered,
-      DateTime? lastFertilized,
-      DateTime? nextWateringDate,
-      DateTime? nextFertilizingDate});
-
-  $PlantCareInfoCopyWith<$Res> get careInfo;
+      @JsonKey(name: 'profile_id') String? profileId,
+      double? confidence,
+      @JsonKey(name: 'health_status') Map<String, dynamic>? healthStatus,
+      Map<String, dynamic>? location,
+      @JsonKey(name: 'care_history') List<dynamic> careHistory});
 }
 
 /// @nodoc
@@ -94,22 +102,22 @@ class _$PlantCopyWithImpl<$Res, $Val extends Plant>
   $Res call({
     Object? id = null,
     Object? name = null,
-    Object? scientificName = null,
-    Object? commonName = null,
-    Object? category = null,
-    Object? imageUrl = null,
-    Object? description = null,
-    Object? careInfo = null,
+    Object? scientificName = freezed,
+    Object? commonNames = null,
+    Object? species = freezed,
+    Object? images = null,
+    Object? description = freezed,
+    Object? careInstructions = freezed,
     Object? tags = null,
-    Object? createdAt = null,
-    Object? updatedAt = null,
+    Object? createdAt = freezed,
+    Object? updatedAt = freezed,
     Object? isActive = null,
     Object? isFavorite = null,
-    Object? userNotes = freezed,
-    Object? lastWatered = freezed,
-    Object? lastFertilized = freezed,
-    Object? nextWateringDate = freezed,
-    Object? nextFertilizingDate = freezed,
+    Object? profileId = freezed,
+    Object? confidence = freezed,
+    Object? healthStatus = freezed,
+    Object? location = freezed,
+    Object? careHistory = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -120,42 +128,42 @@ class _$PlantCopyWithImpl<$Res, $Val extends Plant>
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
-      scientificName: null == scientificName
+      scientificName: freezed == scientificName
           ? _value.scientificName
           : scientificName // ignore: cast_nullable_to_non_nullable
-              as String,
-      commonName: null == commonName
-          ? _value.commonName
-          : commonName // ignore: cast_nullable_to_non_nullable
-              as String,
-      category: null == category
-          ? _value.category
-          : category // ignore: cast_nullable_to_non_nullable
-              as String,
-      imageUrl: null == imageUrl
-          ? _value.imageUrl
-          : imageUrl // ignore: cast_nullable_to_non_nullable
-              as String,
-      description: null == description
+              as String?,
+      commonNames: null == commonNames
+          ? _value.commonNames
+          : commonNames // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      species: freezed == species
+          ? _value.species
+          : species // ignore: cast_nullable_to_non_nullable
+              as String?,
+      images: null == images
+          ? _value.images
+          : images // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      description: freezed == description
           ? _value.description
           : description // ignore: cast_nullable_to_non_nullable
-              as String,
-      careInfo: null == careInfo
-          ? _value.careInfo
-          : careInfo // ignore: cast_nullable_to_non_nullable
-              as PlantCareInfo,
+              as String?,
+      careInstructions: freezed == careInstructions
+          ? _value.careInstructions
+          : careInstructions // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
       tags: null == tags
           ? _value.tags
           : tags // ignore: cast_nullable_to_non_nullable
               as List<String>,
-      createdAt: null == createdAt
+      createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      updatedAt: null == updatedAt
+              as DateTime?,
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
       isActive: null == isActive
           ? _value.isActive
           : isActive // ignore: cast_nullable_to_non_nullable
@@ -164,37 +172,27 @@ class _$PlantCopyWithImpl<$Res, $Val extends Plant>
           ? _value.isFavorite
           : isFavorite // ignore: cast_nullable_to_non_nullable
               as bool,
-      userNotes: freezed == userNotes
-          ? _value.userNotes
-          : userNotes // ignore: cast_nullable_to_non_nullable
+      profileId: freezed == profileId
+          ? _value.profileId
+          : profileId // ignore: cast_nullable_to_non_nullable
               as String?,
-      lastWatered: freezed == lastWatered
-          ? _value.lastWatered
-          : lastWatered // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      lastFertilized: freezed == lastFertilized
-          ? _value.lastFertilized
-          : lastFertilized // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      nextWateringDate: freezed == nextWateringDate
-          ? _value.nextWateringDate
-          : nextWateringDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      nextFertilizingDate: freezed == nextFertilizingDate
-          ? _value.nextFertilizingDate
-          : nextFertilizingDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+      confidence: freezed == confidence
+          ? _value.confidence
+          : confidence // ignore: cast_nullable_to_non_nullable
+              as double?,
+      healthStatus: freezed == healthStatus
+          ? _value.healthStatus
+          : healthStatus // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
+      location: freezed == location
+          ? _value.location
+          : location // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
+      careHistory: null == careHistory
+          ? _value.careHistory
+          : careHistory // ignore: cast_nullable_to_non_nullable
+              as List<dynamic>,
     ) as $Val);
-  }
-
-  /// Create a copy of Plant
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $PlantCareInfoCopyWith<$Res> get careInfo {
-    return $PlantCareInfoCopyWith<$Res>(_value.careInfo, (value) {
-      return _then(_value.copyWith(careInfo: value) as $Val);
-    });
   }
 }
 
@@ -208,25 +206,23 @@ abstract class _$$PlantImplCopyWith<$Res> implements $PlantCopyWith<$Res> {
   $Res call(
       {String id,
       String name,
-      String scientificName,
-      String commonName,
-      String category,
-      String imageUrl,
-      String description,
-      PlantCareInfo careInfo,
+      @JsonKey(name: 'scientific_name') String? scientificName,
+      @JsonKey(name: 'common_names') List<String> commonNames,
+      String? species,
+      List<String> images,
+      String? description,
+      @JsonKey(name: 'care_instructions')
+      Map<String, dynamic>? careInstructions,
       List<String> tags,
-      DateTime createdAt,
-      DateTime updatedAt,
-      bool isActive,
+      @JsonKey(name: 'created_at') DateTime? createdAt,
+      @JsonKey(name: 'updated_at') DateTime? updatedAt,
+      @JsonKey(name: 'is_active') bool isActive,
       bool isFavorite,
-      String? userNotes,
-      DateTime? lastWatered,
-      DateTime? lastFertilized,
-      DateTime? nextWateringDate,
-      DateTime? nextFertilizingDate});
-
-  @override
-  $PlantCareInfoCopyWith<$Res> get careInfo;
+      @JsonKey(name: 'profile_id') String? profileId,
+      double? confidence,
+      @JsonKey(name: 'health_status') Map<String, dynamic>? healthStatus,
+      Map<String, dynamic>? location,
+      @JsonKey(name: 'care_history') List<dynamic> careHistory});
 }
 
 /// @nodoc
@@ -244,22 +240,22 @@ class __$$PlantImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? name = null,
-    Object? scientificName = null,
-    Object? commonName = null,
-    Object? category = null,
-    Object? imageUrl = null,
-    Object? description = null,
-    Object? careInfo = null,
+    Object? scientificName = freezed,
+    Object? commonNames = null,
+    Object? species = freezed,
+    Object? images = null,
+    Object? description = freezed,
+    Object? careInstructions = freezed,
     Object? tags = null,
-    Object? createdAt = null,
-    Object? updatedAt = null,
+    Object? createdAt = freezed,
+    Object? updatedAt = freezed,
     Object? isActive = null,
     Object? isFavorite = null,
-    Object? userNotes = freezed,
-    Object? lastWatered = freezed,
-    Object? lastFertilized = freezed,
-    Object? nextWateringDate = freezed,
-    Object? nextFertilizingDate = freezed,
+    Object? profileId = freezed,
+    Object? confidence = freezed,
+    Object? healthStatus = freezed,
+    Object? location = freezed,
+    Object? careHistory = null,
   }) {
     return _then(_$PlantImpl(
       id: null == id
@@ -270,42 +266,42 @@ class __$$PlantImplCopyWithImpl<$Res>
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
-      scientificName: null == scientificName
+      scientificName: freezed == scientificName
           ? _value.scientificName
           : scientificName // ignore: cast_nullable_to_non_nullable
-              as String,
-      commonName: null == commonName
-          ? _value.commonName
-          : commonName // ignore: cast_nullable_to_non_nullable
-              as String,
-      category: null == category
-          ? _value.category
-          : category // ignore: cast_nullable_to_non_nullable
-              as String,
-      imageUrl: null == imageUrl
-          ? _value.imageUrl
-          : imageUrl // ignore: cast_nullable_to_non_nullable
-              as String,
-      description: null == description
+              as String?,
+      commonNames: null == commonNames
+          ? _value._commonNames
+          : commonNames // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      species: freezed == species
+          ? _value.species
+          : species // ignore: cast_nullable_to_non_nullable
+              as String?,
+      images: null == images
+          ? _value._images
+          : images // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      description: freezed == description
           ? _value.description
           : description // ignore: cast_nullable_to_non_nullable
-              as String,
-      careInfo: null == careInfo
-          ? _value.careInfo
-          : careInfo // ignore: cast_nullable_to_non_nullable
-              as PlantCareInfo,
+              as String?,
+      careInstructions: freezed == careInstructions
+          ? _value._careInstructions
+          : careInstructions // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
       tags: null == tags
           ? _value._tags
           : tags // ignore: cast_nullable_to_non_nullable
               as List<String>,
-      createdAt: null == createdAt
+      createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      updatedAt: null == updatedAt
+              as DateTime?,
+      updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
       isActive: null == isActive
           ? _value.isActive
           : isActive // ignore: cast_nullable_to_non_nullable
@@ -314,26 +310,26 @@ class __$$PlantImplCopyWithImpl<$Res>
           ? _value.isFavorite
           : isFavorite // ignore: cast_nullable_to_non_nullable
               as bool,
-      userNotes: freezed == userNotes
-          ? _value.userNotes
-          : userNotes // ignore: cast_nullable_to_non_nullable
+      profileId: freezed == profileId
+          ? _value.profileId
+          : profileId // ignore: cast_nullable_to_non_nullable
               as String?,
-      lastWatered: freezed == lastWatered
-          ? _value.lastWatered
-          : lastWatered // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      lastFertilized: freezed == lastFertilized
-          ? _value.lastFertilized
-          : lastFertilized // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      nextWateringDate: freezed == nextWateringDate
-          ? _value.nextWateringDate
-          : nextWateringDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      nextFertilizingDate: freezed == nextFertilizingDate
-          ? _value.nextFertilizingDate
-          : nextFertilizingDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+      confidence: freezed == confidence
+          ? _value.confidence
+          : confidence // ignore: cast_nullable_to_non_nullable
+              as double?,
+      healthStatus: freezed == healthStatus
+          ? _value._healthStatus
+          : healthStatus // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
+      location: freezed == location
+          ? _value._location
+          : location // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
+      careHistory: null == careHistory
+          ? _value._careHistory
+          : careHistory // ignore: cast_nullable_to_non_nullable
+              as List<dynamic>,
     ));
   }
 }
@@ -344,23 +340,31 @@ class _$PlantImpl implements _Plant {
   const _$PlantImpl(
       {required this.id,
       required this.name,
-      required this.scientificName,
-      required this.commonName,
-      required this.category,
-      required this.imageUrl,
-      required this.description,
-      required this.careInfo,
-      required final List<String> tags,
-      required this.createdAt,
-      required this.updatedAt,
-      this.isActive = true,
+      @JsonKey(name: 'scientific_name') this.scientificName,
+      @JsonKey(name: 'common_names') final List<String> commonNames = const [],
+      this.species,
+      final List<String> images = const [],
+      this.description,
+      @JsonKey(name: 'care_instructions')
+      final Map<String, dynamic>? careInstructions,
+      final List<String> tags = const [],
+      @JsonKey(name: 'created_at') this.createdAt,
+      @JsonKey(name: 'updated_at') this.updatedAt,
+      @JsonKey(name: 'is_active') this.isActive = true,
       this.isFavorite = false,
-      this.userNotes,
-      this.lastWatered,
-      this.lastFertilized,
-      this.nextWateringDate,
-      this.nextFertilizingDate})
-      : _tags = tags;
+      @JsonKey(name: 'profile_id') this.profileId,
+      this.confidence,
+      @JsonKey(name: 'health_status') final Map<String, dynamic>? healthStatus,
+      final Map<String, dynamic>? location,
+      @JsonKey(name: 'care_history')
+      final List<dynamic> careHistory = const []})
+      : _commonNames = commonNames,
+        _images = images,
+        _careInstructions = careInstructions,
+        _tags = tags,
+        _healthStatus = healthStatus,
+        _location = location,
+        _careHistory = careHistory;
 
   factory _$PlantImpl.fromJson(Map<String, dynamic> json) =>
       _$$PlantImplFromJson(json);
@@ -370,20 +374,44 @@ class _$PlantImpl implements _Plant {
   @override
   final String name;
   @override
-  final String scientificName;
+  @JsonKey(name: 'scientific_name')
+  final String? scientificName;
+  final List<String> _commonNames;
   @override
-  final String commonName;
+  @JsonKey(name: 'common_names')
+  List<String> get commonNames {
+    if (_commonNames is EqualUnmodifiableListView) return _commonNames;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_commonNames);
+  }
+
   @override
-  final String category;
-// houseplant, outdoor, herb, flower, etc.
+  final String? species;
+  final List<String> _images;
   @override
-  final String imageUrl;
+  @JsonKey()
+  List<String> get images {
+    if (_images is EqualUnmodifiableListView) return _images;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_images);
+  }
+
   @override
-  final String description;
+  final String? description;
+  final Map<String, dynamic>? _careInstructions;
   @override
-  final PlantCareInfo careInfo;
+  @JsonKey(name: 'care_instructions')
+  Map<String, dynamic>? get careInstructions {
+    final value = _careInstructions;
+    if (value == null) return null;
+    if (_careInstructions is EqualUnmodifiableMapView) return _careInstructions;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(value);
+  }
+
   final List<String> _tags;
   @override
+  @JsonKey()
   List<String> get tags {
     if (_tags is EqualUnmodifiableListView) return _tags;
     // ignore: implicit_dynamic_type
@@ -391,29 +419,55 @@ class _$PlantImpl implements _Plant {
   }
 
   @override
-  final DateTime createdAt;
+  @JsonKey(name: 'created_at')
+  final DateTime? createdAt;
   @override
-  final DateTime updatedAt;
+  @JsonKey(name: 'updated_at')
+  final DateTime? updatedAt;
   @override
-  @JsonKey()
+  @JsonKey(name: 'is_active')
   final bool isActive;
   @override
   @JsonKey()
   final bool isFavorite;
   @override
-  final String? userNotes;
+  @JsonKey(name: 'profile_id')
+  final String? profileId;
   @override
-  final DateTime? lastWatered;
+  final double? confidence;
+  final Map<String, dynamic>? _healthStatus;
   @override
-  final DateTime? lastFertilized;
+  @JsonKey(name: 'health_status')
+  Map<String, dynamic>? get healthStatus {
+    final value = _healthStatus;
+    if (value == null) return null;
+    if (_healthStatus is EqualUnmodifiableMapView) return _healthStatus;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(value);
+  }
+
+  final Map<String, dynamic>? _location;
   @override
-  final DateTime? nextWateringDate;
+  Map<String, dynamic>? get location {
+    final value = _location;
+    if (value == null) return null;
+    if (_location is EqualUnmodifiableMapView) return _location;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(value);
+  }
+
+  final List<dynamic> _careHistory;
   @override
-  final DateTime? nextFertilizingDate;
+  @JsonKey(name: 'care_history')
+  List<dynamic> get careHistory {
+    if (_careHistory is EqualUnmodifiableListView) return _careHistory;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_careHistory);
+  }
 
   @override
   String toString() {
-    return 'Plant(id: $id, name: $name, scientificName: $scientificName, commonName: $commonName, category: $category, imageUrl: $imageUrl, description: $description, careInfo: $careInfo, tags: $tags, createdAt: $createdAt, updatedAt: $updatedAt, isActive: $isActive, isFavorite: $isFavorite, userNotes: $userNotes, lastWatered: $lastWatered, lastFertilized: $lastFertilized, nextWateringDate: $nextWateringDate, nextFertilizingDate: $nextFertilizingDate)';
+    return 'Plant(id: $id, name: $name, scientificName: $scientificName, commonNames: $commonNames, species: $species, images: $images, description: $description, careInstructions: $careInstructions, tags: $tags, createdAt: $createdAt, updatedAt: $updatedAt, isActive: $isActive, isFavorite: $isFavorite, profileId: $profileId, confidence: $confidence, healthStatus: $healthStatus, location: $location, careHistory: $careHistory)';
   }
 
   @override
@@ -425,16 +479,14 @@ class _$PlantImpl implements _Plant {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.scientificName, scientificName) ||
                 other.scientificName == scientificName) &&
-            (identical(other.commonName, commonName) ||
-                other.commonName == commonName) &&
-            (identical(other.category, category) ||
-                other.category == category) &&
-            (identical(other.imageUrl, imageUrl) ||
-                other.imageUrl == imageUrl) &&
+            const DeepCollectionEquality()
+                .equals(other._commonNames, _commonNames) &&
+            (identical(other.species, species) || other.species == species) &&
+            const DeepCollectionEquality().equals(other._images, _images) &&
             (identical(other.description, description) ||
                 other.description == description) &&
-            (identical(other.careInfo, careInfo) ||
-                other.careInfo == careInfo) &&
+            const DeepCollectionEquality()
+                .equals(other._careInstructions, _careInstructions) &&
             const DeepCollectionEquality().equals(other._tags, _tags) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
@@ -444,16 +496,15 @@ class _$PlantImpl implements _Plant {
                 other.isActive == isActive) &&
             (identical(other.isFavorite, isFavorite) ||
                 other.isFavorite == isFavorite) &&
-            (identical(other.userNotes, userNotes) ||
-                other.userNotes == userNotes) &&
-            (identical(other.lastWatered, lastWatered) ||
-                other.lastWatered == lastWatered) &&
-            (identical(other.lastFertilized, lastFertilized) ||
-                other.lastFertilized == lastFertilized) &&
-            (identical(other.nextWateringDate, nextWateringDate) ||
-                other.nextWateringDate == nextWateringDate) &&
-            (identical(other.nextFertilizingDate, nextFertilizingDate) ||
-                other.nextFertilizingDate == nextFertilizingDate));
+            (identical(other.profileId, profileId) ||
+                other.profileId == profileId) &&
+            (identical(other.confidence, confidence) ||
+                other.confidence == confidence) &&
+            const DeepCollectionEquality()
+                .equals(other._healthStatus, _healthStatus) &&
+            const DeepCollectionEquality().equals(other._location, _location) &&
+            const DeepCollectionEquality()
+                .equals(other._careHistory, _careHistory));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -463,21 +514,21 @@ class _$PlantImpl implements _Plant {
       id,
       name,
       scientificName,
-      commonName,
-      category,
-      imageUrl,
+      const DeepCollectionEquality().hash(_commonNames),
+      species,
+      const DeepCollectionEquality().hash(_images),
       description,
-      careInfo,
+      const DeepCollectionEquality().hash(_careInstructions),
       const DeepCollectionEquality().hash(_tags),
       createdAt,
       updatedAt,
       isActive,
       isFavorite,
-      userNotes,
-      lastWatered,
-      lastFertilized,
-      nextWateringDate,
-      nextFertilizingDate);
+      profileId,
+      confidence,
+      const DeepCollectionEquality().hash(_healthStatus),
+      const DeepCollectionEquality().hash(_location),
+      const DeepCollectionEquality().hash(_careHistory));
 
   /// Create a copy of Plant
   /// with the given fields replaced by the non-null parameter values.
@@ -499,22 +550,24 @@ abstract class _Plant implements Plant {
   const factory _Plant(
       {required final String id,
       required final String name,
-      required final String scientificName,
-      required final String commonName,
-      required final String category,
-      required final String imageUrl,
-      required final String description,
-      required final PlantCareInfo careInfo,
-      required final List<String> tags,
-      required final DateTime createdAt,
-      required final DateTime updatedAt,
-      final bool isActive,
+      @JsonKey(name: 'scientific_name') final String? scientificName,
+      @JsonKey(name: 'common_names') final List<String> commonNames,
+      final String? species,
+      final List<String> images,
+      final String? description,
+      @JsonKey(name: 'care_instructions')
+      final Map<String, dynamic>? careInstructions,
+      final List<String> tags,
+      @JsonKey(name: 'created_at') final DateTime? createdAt,
+      @JsonKey(name: 'updated_at') final DateTime? updatedAt,
+      @JsonKey(name: 'is_active') final bool isActive,
       final bool isFavorite,
-      final String? userNotes,
-      final DateTime? lastWatered,
-      final DateTime? lastFertilized,
-      final DateTime? nextWateringDate,
-      final DateTime? nextFertilizingDate}) = _$PlantImpl;
+      @JsonKey(name: 'profile_id') final String? profileId,
+      final double? confidence,
+      @JsonKey(name: 'health_status') final Map<String, dynamic>? healthStatus,
+      final Map<String, dynamic>? location,
+      @JsonKey(name: 'care_history')
+      final List<dynamic> careHistory}) = _$PlantImpl;
 
   factory _Plant.fromJson(Map<String, dynamic> json) = _$PlantImpl.fromJson;
 
@@ -523,461 +576,51 @@ abstract class _Plant implements Plant {
   @override
   String get name;
   @override
-  String get scientificName;
+  @JsonKey(name: 'scientific_name')
+  String? get scientificName;
   @override
-  String get commonName;
+  @JsonKey(name: 'common_names')
+  List<String> get commonNames;
   @override
-  String get category; // houseplant, outdoor, herb, flower, etc.
+  String? get species;
   @override
-  String get imageUrl;
+  List<String> get images;
   @override
-  String get description;
+  String? get description;
   @override
-  PlantCareInfo get careInfo;
+  @JsonKey(name: 'care_instructions')
+  Map<String, dynamic>? get careInstructions;
   @override
   List<String> get tags;
   @override
-  DateTime get createdAt;
+  @JsonKey(name: 'created_at')
+  DateTime? get createdAt;
   @override
-  DateTime get updatedAt;
+  @JsonKey(name: 'updated_at')
+  DateTime? get updatedAt;
   @override
+  @JsonKey(name: 'is_active')
   bool get isActive;
   @override
   bool get isFavorite;
   @override
-  String? get userNotes;
+  @JsonKey(name: 'profile_id')
+  String? get profileId;
   @override
-  DateTime? get lastWatered;
+  double? get confidence;
   @override
-  DateTime? get lastFertilized;
+  @JsonKey(name: 'health_status')
+  Map<String, dynamic>? get healthStatus;
   @override
-  DateTime? get nextWateringDate;
+  Map<String, dynamic>? get location;
   @override
-  DateTime? get nextFertilizingDate;
+  @JsonKey(name: 'care_history')
+  List<dynamic> get careHistory;
 
   /// Create a copy of Plant
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$PlantImplCopyWith<_$PlantImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-PlantCareInfo _$PlantCareInfoFromJson(Map<String, dynamic> json) {
-  return _PlantCareInfo.fromJson(json);
-}
-
-/// @nodoc
-mixin _$PlantCareInfo {
-  String get lightRequirement =>
-      throw _privateConstructorUsedError; // low, medium, high, bright indirect
-  String get wateringFrequency =>
-      throw _privateConstructorUsedError; // daily, weekly, bi-weekly, monthly
-  String get soilType =>
-      throw _privateConstructorUsedError; // well-draining, moist, dry, sandy, etc.
-  String get humidity =>
-      throw _privateConstructorUsedError; // low, medium, high
-  String get temperature =>
-      throw _privateConstructorUsedError; // cool, moderate, warm
-  List<String> get fertilizingSchedule => throw _privateConstructorUsedError;
-  List<String> get commonProblems => throw _privateConstructorUsedError;
-  List<String> get careInstructions => throw _privateConstructorUsedError;
-  String? get repottingInfo => throw _privateConstructorUsedError;
-  String? get pruningInfo => throw _privateConstructorUsedError;
-  List<String>? get toxicityWarnings => throw _privateConstructorUsedError;
-
-  /// Serializes this PlantCareInfo to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of PlantCareInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $PlantCareInfoCopyWith<PlantCareInfo> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $PlantCareInfoCopyWith<$Res> {
-  factory $PlantCareInfoCopyWith(
-          PlantCareInfo value, $Res Function(PlantCareInfo) then) =
-      _$PlantCareInfoCopyWithImpl<$Res, PlantCareInfo>;
-  @useResult
-  $Res call(
-      {String lightRequirement,
-      String wateringFrequency,
-      String soilType,
-      String humidity,
-      String temperature,
-      List<String> fertilizingSchedule,
-      List<String> commonProblems,
-      List<String> careInstructions,
-      String? repottingInfo,
-      String? pruningInfo,
-      List<String>? toxicityWarnings});
-}
-
-/// @nodoc
-class _$PlantCareInfoCopyWithImpl<$Res, $Val extends PlantCareInfo>
-    implements $PlantCareInfoCopyWith<$Res> {
-  _$PlantCareInfoCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of PlantCareInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? lightRequirement = null,
-    Object? wateringFrequency = null,
-    Object? soilType = null,
-    Object? humidity = null,
-    Object? temperature = null,
-    Object? fertilizingSchedule = null,
-    Object? commonProblems = null,
-    Object? careInstructions = null,
-    Object? repottingInfo = freezed,
-    Object? pruningInfo = freezed,
-    Object? toxicityWarnings = freezed,
-  }) {
-    return _then(_value.copyWith(
-      lightRequirement: null == lightRequirement
-          ? _value.lightRequirement
-          : lightRequirement // ignore: cast_nullable_to_non_nullable
-              as String,
-      wateringFrequency: null == wateringFrequency
-          ? _value.wateringFrequency
-          : wateringFrequency // ignore: cast_nullable_to_non_nullable
-              as String,
-      soilType: null == soilType
-          ? _value.soilType
-          : soilType // ignore: cast_nullable_to_non_nullable
-              as String,
-      humidity: null == humidity
-          ? _value.humidity
-          : humidity // ignore: cast_nullable_to_non_nullable
-              as String,
-      temperature: null == temperature
-          ? _value.temperature
-          : temperature // ignore: cast_nullable_to_non_nullable
-              as String,
-      fertilizingSchedule: null == fertilizingSchedule
-          ? _value.fertilizingSchedule
-          : fertilizingSchedule // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      commonProblems: null == commonProblems
-          ? _value.commonProblems
-          : commonProblems // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      careInstructions: null == careInstructions
-          ? _value.careInstructions
-          : careInstructions // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      repottingInfo: freezed == repottingInfo
-          ? _value.repottingInfo
-          : repottingInfo // ignore: cast_nullable_to_non_nullable
-              as String?,
-      pruningInfo: freezed == pruningInfo
-          ? _value.pruningInfo
-          : pruningInfo // ignore: cast_nullable_to_non_nullable
-              as String?,
-      toxicityWarnings: freezed == toxicityWarnings
-          ? _value.toxicityWarnings
-          : toxicityWarnings // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$PlantCareInfoImplCopyWith<$Res>
-    implements $PlantCareInfoCopyWith<$Res> {
-  factory _$$PlantCareInfoImplCopyWith(
-          _$PlantCareInfoImpl value, $Res Function(_$PlantCareInfoImpl) then) =
-      __$$PlantCareInfoImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String lightRequirement,
-      String wateringFrequency,
-      String soilType,
-      String humidity,
-      String temperature,
-      List<String> fertilizingSchedule,
-      List<String> commonProblems,
-      List<String> careInstructions,
-      String? repottingInfo,
-      String? pruningInfo,
-      List<String>? toxicityWarnings});
-}
-
-/// @nodoc
-class __$$PlantCareInfoImplCopyWithImpl<$Res>
-    extends _$PlantCareInfoCopyWithImpl<$Res, _$PlantCareInfoImpl>
-    implements _$$PlantCareInfoImplCopyWith<$Res> {
-  __$$PlantCareInfoImplCopyWithImpl(
-      _$PlantCareInfoImpl _value, $Res Function(_$PlantCareInfoImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of PlantCareInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? lightRequirement = null,
-    Object? wateringFrequency = null,
-    Object? soilType = null,
-    Object? humidity = null,
-    Object? temperature = null,
-    Object? fertilizingSchedule = null,
-    Object? commonProblems = null,
-    Object? careInstructions = null,
-    Object? repottingInfo = freezed,
-    Object? pruningInfo = freezed,
-    Object? toxicityWarnings = freezed,
-  }) {
-    return _then(_$PlantCareInfoImpl(
-      lightRequirement: null == lightRequirement
-          ? _value.lightRequirement
-          : lightRequirement // ignore: cast_nullable_to_non_nullable
-              as String,
-      wateringFrequency: null == wateringFrequency
-          ? _value.wateringFrequency
-          : wateringFrequency // ignore: cast_nullable_to_non_nullable
-              as String,
-      soilType: null == soilType
-          ? _value.soilType
-          : soilType // ignore: cast_nullable_to_non_nullable
-              as String,
-      humidity: null == humidity
-          ? _value.humidity
-          : humidity // ignore: cast_nullable_to_non_nullable
-              as String,
-      temperature: null == temperature
-          ? _value.temperature
-          : temperature // ignore: cast_nullable_to_non_nullable
-              as String,
-      fertilizingSchedule: null == fertilizingSchedule
-          ? _value._fertilizingSchedule
-          : fertilizingSchedule // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      commonProblems: null == commonProblems
-          ? _value._commonProblems
-          : commonProblems // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      careInstructions: null == careInstructions
-          ? _value._careInstructions
-          : careInstructions // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      repottingInfo: freezed == repottingInfo
-          ? _value.repottingInfo
-          : repottingInfo // ignore: cast_nullable_to_non_nullable
-              as String?,
-      pruningInfo: freezed == pruningInfo
-          ? _value.pruningInfo
-          : pruningInfo // ignore: cast_nullable_to_non_nullable
-              as String?,
-      toxicityWarnings: freezed == toxicityWarnings
-          ? _value._toxicityWarnings
-          : toxicityWarnings // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$PlantCareInfoImpl implements _PlantCareInfo {
-  const _$PlantCareInfoImpl(
-      {required this.lightRequirement,
-      required this.wateringFrequency,
-      required this.soilType,
-      required this.humidity,
-      required this.temperature,
-      required final List<String> fertilizingSchedule,
-      required final List<String> commonProblems,
-      required final List<String> careInstructions,
-      this.repottingInfo,
-      this.pruningInfo,
-      final List<String>? toxicityWarnings})
-      : _fertilizingSchedule = fertilizingSchedule,
-        _commonProblems = commonProblems,
-        _careInstructions = careInstructions,
-        _toxicityWarnings = toxicityWarnings;
-
-  factory _$PlantCareInfoImpl.fromJson(Map<String, dynamic> json) =>
-      _$$PlantCareInfoImplFromJson(json);
-
-  @override
-  final String lightRequirement;
-// low, medium, high, bright indirect
-  @override
-  final String wateringFrequency;
-// daily, weekly, bi-weekly, monthly
-  @override
-  final String soilType;
-// well-draining, moist, dry, sandy, etc.
-  @override
-  final String humidity;
-// low, medium, high
-  @override
-  final String temperature;
-// cool, moderate, warm
-  final List<String> _fertilizingSchedule;
-// cool, moderate, warm
-  @override
-  List<String> get fertilizingSchedule {
-    if (_fertilizingSchedule is EqualUnmodifiableListView)
-      return _fertilizingSchedule;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_fertilizingSchedule);
-  }
-
-  final List<String> _commonProblems;
-  @override
-  List<String> get commonProblems {
-    if (_commonProblems is EqualUnmodifiableListView) return _commonProblems;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_commonProblems);
-  }
-
-  final List<String> _careInstructions;
-  @override
-  List<String> get careInstructions {
-    if (_careInstructions is EqualUnmodifiableListView)
-      return _careInstructions;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_careInstructions);
-  }
-
-  @override
-  final String? repottingInfo;
-  @override
-  final String? pruningInfo;
-  final List<String>? _toxicityWarnings;
-  @override
-  List<String>? get toxicityWarnings {
-    final value = _toxicityWarnings;
-    if (value == null) return null;
-    if (_toxicityWarnings is EqualUnmodifiableListView)
-      return _toxicityWarnings;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
-  }
-
-  @override
-  String toString() {
-    return 'PlantCareInfo(lightRequirement: $lightRequirement, wateringFrequency: $wateringFrequency, soilType: $soilType, humidity: $humidity, temperature: $temperature, fertilizingSchedule: $fertilizingSchedule, commonProblems: $commonProblems, careInstructions: $careInstructions, repottingInfo: $repottingInfo, pruningInfo: $pruningInfo, toxicityWarnings: $toxicityWarnings)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$PlantCareInfoImpl &&
-            (identical(other.lightRequirement, lightRequirement) ||
-                other.lightRequirement == lightRequirement) &&
-            (identical(other.wateringFrequency, wateringFrequency) ||
-                other.wateringFrequency == wateringFrequency) &&
-            (identical(other.soilType, soilType) ||
-                other.soilType == soilType) &&
-            (identical(other.humidity, humidity) ||
-                other.humidity == humidity) &&
-            (identical(other.temperature, temperature) ||
-                other.temperature == temperature) &&
-            const DeepCollectionEquality()
-                .equals(other._fertilizingSchedule, _fertilizingSchedule) &&
-            const DeepCollectionEquality()
-                .equals(other._commonProblems, _commonProblems) &&
-            const DeepCollectionEquality()
-                .equals(other._careInstructions, _careInstructions) &&
-            (identical(other.repottingInfo, repottingInfo) ||
-                other.repottingInfo == repottingInfo) &&
-            (identical(other.pruningInfo, pruningInfo) ||
-                other.pruningInfo == pruningInfo) &&
-            const DeepCollectionEquality()
-                .equals(other._toxicityWarnings, _toxicityWarnings));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      lightRequirement,
-      wateringFrequency,
-      soilType,
-      humidity,
-      temperature,
-      const DeepCollectionEquality().hash(_fertilizingSchedule),
-      const DeepCollectionEquality().hash(_commonProblems),
-      const DeepCollectionEquality().hash(_careInstructions),
-      repottingInfo,
-      pruningInfo,
-      const DeepCollectionEquality().hash(_toxicityWarnings));
-
-  /// Create a copy of PlantCareInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$PlantCareInfoImplCopyWith<_$PlantCareInfoImpl> get copyWith =>
-      __$$PlantCareInfoImplCopyWithImpl<_$PlantCareInfoImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$PlantCareInfoImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _PlantCareInfo implements PlantCareInfo {
-  const factory _PlantCareInfo(
-      {required final String lightRequirement,
-      required final String wateringFrequency,
-      required final String soilType,
-      required final String humidity,
-      required final String temperature,
-      required final List<String> fertilizingSchedule,
-      required final List<String> commonProblems,
-      required final List<String> careInstructions,
-      final String? repottingInfo,
-      final String? pruningInfo,
-      final List<String>? toxicityWarnings}) = _$PlantCareInfoImpl;
-
-  factory _PlantCareInfo.fromJson(Map<String, dynamic> json) =
-      _$PlantCareInfoImpl.fromJson;
-
-  @override
-  String get lightRequirement; // low, medium, high, bright indirect
-  @override
-  String get wateringFrequency; // daily, weekly, bi-weekly, monthly
-  @override
-  String get soilType; // well-draining, moist, dry, sandy, etc.
-  @override
-  String get humidity; // low, medium, high
-  @override
-  String get temperature; // cool, moderate, warm
-  @override
-  List<String> get fertilizingSchedule;
-  @override
-  List<String> get commonProblems;
-  @override
-  List<String> get careInstructions;
-  @override
-  String? get repottingInfo;
-  @override
-  String? get pruningInfo;
-  @override
-  List<String>? get toxicityWarnings;
-
-  /// Create a copy of PlantCareInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$PlantCareInfoImplCopyWith<_$PlantCareInfoImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

@@ -101,13 +101,13 @@ class _PlantCard extends StatelessWidget {
                 ),
               ),
               child: Center(
-                child: plant.imageUrl.isNotEmpty
+                child: plant.primaryImage.isNotEmpty
                     ? ClipRRect(
                         borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(16),
                         ),
                         child: Image.network(
-                          plant.imageUrl,
+                          plant.primaryImage,
                           fit: BoxFit.cover,
                           width: double.infinity,
                           height: double.infinity,
@@ -136,7 +136,7 @@ class _PlantCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    plant.category,
+                    plant.species ?? plant.displayName,
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[600],
@@ -170,17 +170,38 @@ class _PlantCard extends StatelessWidget {
   }
 
   IconData _getHealthIcon() {
-    if (plant.nextWateringDate == null) return Icons.warning;
+    final lastWatered = _getLastWateredDate();
+    if (lastWatered == null) return Icons.warning;
     
-    final needsWater = DateTime.now().isAfter(plant.nextWateringDate!);
+    final daysSinceWatered = DateTime.now().difference(lastWatered).inDays;
+    final needsWater = daysSinceWatered > 7; // Default 7 days
     return needsWater ? Icons.water_drop : Icons.check_circle;
   }
 
   Color _getHealthColor() {
-    if (plant.nextWateringDate == null) return AppTheme.warningColor;
+    final lastWatered = _getLastWateredDate();
+    if (lastWatered == null) return AppTheme.warningColor;
     
-    final needsWater = DateTime.now().isAfter(plant.nextWateringDate!);
+    final daysSinceWatered = DateTime.now().difference(lastWatered).inDays;
+    final needsWater = daysSinceWatered > 7; // Default 7 days
     return needsWater ? AppTheme.warningColor : AppTheme.successColor;
+  }
+
+  DateTime? _getLastWateredDate() {
+    try {
+      final wateringRecords = plant.careHistory
+          .where((record) => record['type'] == 'watering')
+          .toList();
+      
+      if (wateringRecords.isEmpty) return null;
+      
+      wateringRecords.sort((a, b) => 
+          DateTime.parse(b['date']).compareTo(DateTime.parse(a['date'])));
+      
+      return DateTime.parse(wateringRecords.first['date']);
+    } catch (e) {
+      return null;
+    }
   }
 }
 

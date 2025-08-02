@@ -29,9 +29,32 @@ class PlantsNotifier extends StateNotifier<AsyncValue<List<Plant>>> {
           .eq('is_active', true)
           .order('created_at', ascending: false);
 
-      return (response as List)
-          .map((json) => Plant.fromJson(json))
-          .toList();
+      _logger.i('🌱 Raw plants response: $response');
+      
+      if (response == null) {
+        _logger.w('🌱 No plants data returned');
+        return [];
+      }
+
+      final plantsList = response as List;
+      if (plantsList.isEmpty) {
+        _logger.i('🌱 No plants found in database');
+        return [];
+      }
+
+      final plants = <Plant>[];
+      for (final json in plantsList) {
+        try {
+          final plant = Plant.fromJson(json as Map<String, dynamic>);
+          plants.add(plant);
+        } catch (plantError) {
+          _logger.w('🌱 Failed to parse plant: $plantError, data: $json');
+          // Skip invalid plants but continue processing others
+        }
+      }
+      
+      _logger.i('🌱 Successfully loaded ${plants.length} plants');
+      return plants;
     } catch (e) {
       _logger.e('Error fetching plants: $e');
       throw Exception('Failed to load plants');
@@ -88,17 +111,22 @@ class PlantsNotifier extends StateNotifier<AsyncValue<List<Plant>>> {
     if (currentState == null) return;
     
     final plant = currentState.firstWhere((p) => p.id == plantId);
-    final updatedPlant = plant.copyWith(
-      lastWatered: wateringDate,
-      nextWateringDate: _calculateNextWateringDate(
-        plant.careInfo.wateringFrequency,
-        wateringDate,
-      ),
-    );
+    
+    // Update care history with watering record
+    final updatedCareHistory = List<dynamic>.from(plant.careHistory);
+    updatedCareHistory.add({
+      'type': 'watering',
+      'date': wateringDate.toIso8601String(),
+      'notes': 'Watered',
+    });
+    
+    final updatedPlant = plant.copyWith(careHistory: updatedCareHistory);
     await updatePlant(updatedPlant);
   }
 
-  DateTime _calculateNextWateringDate(String frequency, DateTime lastWatered) {
+  DateTime _calculateNextWateringDate(String? frequency, DateTime lastWatered) {
+    if (frequency == null) return lastWatered.add(const Duration(days: 7));
+    
     switch (frequency.toLowerCase()) {
       case 'daily':
         return lastWatered.add(const Duration(days: 1));
@@ -146,7 +174,11 @@ final favoritePlantsProvider = Provider<AsyncValue<List<Plant>>>((ref) {
 final plantsByCategoryProvider = Provider.family<AsyncValue<List<Plant>>, String>((ref, category) {
   final plants = ref.watch(plantsNotifierProvider);
   return plants.when(
-    data: (plantList) => AsyncValue.data(plantList.where((plant) => plant.category == category).toList()),
+    data: (plantList) => AsyncValue.data(plantList.where((plant) {
+      // Filter by species or tags since we no longer have category
+      return plant.species?.toLowerCase().contains(category.toLowerCase()) == true ||
+             plant.tags.any((tag) => tag.toLowerCase().contains(category.toLowerCase()));
+    }).toList()),
     loading: () => const AsyncValue.loading(),
     error: (error, stack) => AsyncValue.error(error, stack),
   );

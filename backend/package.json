@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "vercel dev",
-    "build": "echo 'No build step required'",
-    "start": "vercel dev",
+    "local": "node server-local.js",
+    "deploy": "vercel --prod",
     "db:reset": "node scripts/reset_and_setup.js",
     "db:setup": "echo 'Run the schema.sql file in your Supabase SQL editor'"
   },

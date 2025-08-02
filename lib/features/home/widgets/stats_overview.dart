@@ -83,21 +83,52 @@ class StatsOverview extends StatelessWidget {
   }
 
   bool _isHealthy(Plant plant) {
-    // Simple logic - assume plant is healthy if watered within schedule
-    if (plant.lastWatered == null) return false;
+    // Check health status from plant data
+    final healthStatus = plant.healthStatus;
+    if (healthStatus != null) {
+      final overall = healthStatus['overall'];
+      return overall == 'healthy' || overall == 'good';
+    }
     
-    final daysSinceWatered = DateTime.now().difference(plant.lastWatered!).inDays;
-    final maxDaysWithoutWater = _getMaxDaysWithoutWater(plant.careInfo.wateringFrequency);
+    // Fallback: check watering schedule
+    final lastWatered = _getLastWateredDate(plant);
+    if (lastWatered == null) return false;
+    
+    final daysSinceWatered = DateTime.now().difference(lastWatered).inDays;
+    final maxDaysWithoutWater = _getMaxDaysWithoutWater(plant.wateringFrequency);
     
     return daysSinceWatered <= maxDaysWithoutWater;
   }
 
   bool _needsWatering(Plant plant) {
-    if (plant.nextWateringDate == null) return true;
-    return DateTime.now().isAfter(plant.nextWateringDate!);
+    final lastWatered = _getLastWateredDate(plant);
+    if (lastWatered == null) return true;
+    
+    final daysSinceWatered = DateTime.now().difference(lastWatered).inDays;
+    final maxDaysWithoutWater = _getMaxDaysWithoutWater(plant.wateringFrequency);
+    
+    return daysSinceWatered >= maxDaysWithoutWater;
   }
 
-  int _getMaxDaysWithoutWater(String frequency) {
+  DateTime? _getLastWateredDate(Plant plant) {
+    try {
+      final wateringRecords = plant.careHistory
+          .where((record) => record['type'] == 'watering')
+          .toList();
+      
+      if (wateringRecords.isEmpty) return null;
+      
+      wateringRecords.sort((a, b) => 
+          DateTime.parse(b['date']).compareTo(DateTime.parse(a['date'])));
+      
+      return DateTime.parse(wateringRecords.first['date']);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  int _getMaxDaysWithoutWater(String? frequency) {
+    if (frequency == null) return 7;
     switch (frequency.toLowerCase()) {
       case 'daily':
         return 1;

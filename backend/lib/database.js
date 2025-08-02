@@ -13,11 +13,13 @@ const initSupabase = () => {
   
   try {
     const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_ANON_KEY;
+    // Use service role key for backend operations to bypass RLS
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
     console.log('💾 [DATABASE] Environment check:', {
       hasUrl: !!supabaseUrl,
       hasKey: !!supabaseKey,
+      usingServiceRole: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
       urlHost: supabaseUrl ? new URL(supabaseUrl).hostname : 'missing'
     });
 
@@ -29,6 +31,7 @@ const initSupabase = () => {
     supabase = createClient(supabaseUrl, supabaseKey);
     console.log('💾 [DATABASE] ✅ Supabase initialized successfully!', {
       host: new URL(supabaseUrl).hostname,
+      keyType: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'service_role' : 'anon',
       timestamp: new Date().toISOString()
     });
     return supabase;

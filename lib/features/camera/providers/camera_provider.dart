@@ -95,14 +95,15 @@ class CameraController extends StateNotifier<CameraState> {
         id: _uuid.v4(),
         name: result.name,
         scientificName: result.scientificName,
-        commonName: result.name,
-        category: result.category,
-        imageUrl: '', // TODO: Upload image to storage
+        commonNames: [result.name],
+        species: result.category,
+        images: [], // TODO: Upload image to storage
         description: result.description,
-        careInfo: PlantCareInfo.fromJson(result.careInfo),
+        careInstructions: result.careInfo,
         tags: result.tags,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
+        confidence: result.confidence,
       );
 
       state = state.copyWith(
