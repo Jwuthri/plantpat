@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../providers/camera_provider.dart';
+import '../../plants/models/plant.dart';
 
 class CameraActions extends StatelessWidget {
   const CameraActions({
@@ -9,11 +10,15 @@ class CameraActions extends StatelessWidget {
     required this.action,
     required this.onTakePhoto,
     required this.onPickFromGallery,
+    this.selectedPlant,
+    this.onChangeSelectedPlant,
   });
 
   final CameraAction action;
   final Function(CameraAction) onTakePhoto;
   final Function(CameraAction) onPickFromGallery;
+  final Plant? selectedPlant;
+  final VoidCallback? onChangeSelectedPlant;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +31,91 @@ class CameraActions extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // Selected plant info for diagnosis
+            if (action == CameraAction.diagnose && selectedPlant != null) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 32),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.successColor.withOpacity(0.8),
+                      AppTheme.successColor.withOpacity(0.6),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Plant Selected',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const Spacer(),
+                        if (onChangeSelectedPlant != null)
+                          TextButton(
+                            onPressed: onChangeSelectedPlant,
+                            child: Text(
+                              'Change',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                selectedPlant!.name,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              if (selectedPlant!.scientificName?.isNotEmpty == true) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  selectedPlant!.scientificName!,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontStyle: FontStyle.italic,
+                                    color: Colors.white.withOpacity(0.9),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            
             // Main action icon with modern design
             Container(
               width: 140,

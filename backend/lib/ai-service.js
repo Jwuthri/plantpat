@@ -190,8 +190,8 @@ class AIService {
       if (jsonMatch) {
         const parsedResult = JSON.parse(jsonMatch[0]);
         console.log('🧠 [AI-SERVICE] ✅ Plant diagnosis complete!', {
-          overallHealth: parsedResult.healthAssessment?.overallHealth,
-          issuesFound: parsedResult.healthAssessment?.issues?.length || 0,
+          overallHealth: parsedResult,
+          // issuesFound: parsedResult.healthAssessment?.issues?.length || 0,
           totalTime: `${Date.now() - startTime}ms`
         });
         return parsedResult;

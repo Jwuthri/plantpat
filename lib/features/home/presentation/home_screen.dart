@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../plants/providers/plants_provider.dart';
 import '../widgets/quick_action_card.dart';
-import '../widgets/recent_plants_section.dart';
+
 import '../widgets/stats_overview.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -175,18 +175,6 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
 
-              // Recent Plants
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: plantsAsync.when(
-                    data: (plants) => RecentPlantsSection(plants: plants),
-                    loading: () => const _LoadingPlantsSection(),
-                    error: (error, _) => _ErrorCard(error: error.toString()),
-                  ),
-                ),
-              ),
-
               // Bottom spacing for FAB
               const SliverToBoxAdapter(
                 child: SizedBox(height: 100),
@@ -309,57 +297,6 @@ class _LoadingStatsCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _LoadingPlantsSection extends StatelessWidget {
-  const _LoadingPlantsSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Recent Plants',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          height: 200,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outline,
-              width: 1,
-            ),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(
-                  color: AppTheme.plantGreen,
-                  strokeWidth: 2,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Loading plants...',
-                  style: TextStyle(
-                    color: AppTheme.onSurfaceVariant(context),
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

@@ -1,86 +1,21 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
+
+import 'user_profile_service.dart';
+import '../../features/plants/models/plant.dart';
 
 class AIService {
   static const String _backendUrl = 'http://192.168.1.106:3000'; // Use local IP for device testing
   
   final Dio _dio = Dio();
   final Logger _logger = Logger();
-  final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
-  final Uuid _uuid = const Uuid();
-  
-  String? _cachedProfileId;
+  final UserProfileService _profileService = UserProfileService();
 
-  // Generate device-based profile ID with persistent storage
+  // Get device-based profile ID using shared service
   Future<String> _getDeviceProfileId() async {
-    if (_cachedProfileId != null) {
-      return _cachedProfileId!;
-    }
-
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      const String prefKey = 'plantpal_user_id';
-      
-      // First check if we already have a stored user ID
-      String? storedId = prefs.getString(prefKey);
-      if (storedId != null && storedId.isNotEmpty) {
-        _cachedProfileId = storedId;
-        _logger.i('📱 [FLUTTER-AI] 💾 Using stored user ID: $storedId');
-        return storedId;
-      }
-
-      String deviceSeed;
-      
-      try {
-        // Try to get device-specific identifier
-        if (Platform.isAndroid) {
-          final androidInfo = await _deviceInfo.androidInfo;
-          deviceSeed = 'android_${androidInfo.id}';
-          _logger.i('📱 [FLUTTER-AI] 📱 Android device ID retrieved: ${androidInfo.id}');
-        } else if (Platform.isIOS) {
-          final iosInfo = await _deviceInfo.iosInfo;
-          deviceSeed = 'ios_${iosInfo.identifierForVendor ?? 'unknown'}';
-          _logger.i('📱 [FLUTTER-AI] 📱 iOS device ID retrieved: ${iosInfo.identifierForVendor}');
-        } else {
-          // Fallback for other platforms
-          deviceSeed = 'unknown_${DateTime.now().millisecondsSinceEpoch}';
-          _logger.w('📱 [FLUTTER-AI] ⚠️ Unknown platform, using timestamp-based ID');
-        }
-        
-        // Generate deterministic UUID from device seed
-        final profileUuid = _uuid.v5(Uuid.NAMESPACE_URL, deviceSeed);
-        
-        // Store for future use
-        await prefs.setString(prefKey, profileUuid);
-        _cachedProfileId = profileUuid;
-        _logger.i('📱 [FLUTTER-AI] ✅ Generated and stored profile UUID: $profileUuid');
-        return profileUuid;
-        
-      } catch (deviceError) {
-        _logger.e('📱 [FLUTTER-AI] ❌ Device info failed: $deviceError');
-        
-        // Create a random but persistent UUID as fallback
-        final fallbackUuid = _uuid.v4();
-        await prefs.setString(prefKey, fallbackUuid);
-        _cachedProfileId = fallbackUuid;
-        _logger.w('📱 [FLUTTER-AI] ⚠️ Using persistent fallback UUID: $fallbackUuid');
-        return fallbackUuid;
-      }
-      
-    } catch (e) {
-      _logger.e('📱 [FLUTTER-AI] ❌ Critical error getting user ID: $e');
-      // Last resort fallback (not persistent)
-      final emergencyUuid = _uuid.v4();
-      _cachedProfileId = emergencyUuid;
-      _logger.w('📱 [FLUTTER-AI] 🚨 Using emergency UUID: $emergencyUuid');
-      return emergencyUuid;
-    }
+    return await _profileService.getProfileId();
   }
 
   Future<PlantIdentificationResult> identifyPlant(Uint8List imageBytes) async {
@@ -120,14 +55,14 @@ class AIService {
           _logger.d('📱 [FLUTTER-AI] 🔍 Backend response structure: ${aiResult.toString()}');
           
           // Convert backend response to Flutter model
-          final plantId = aiResult['plantIdentification'] ?? {};
+          final plantIdData = aiResult['plantIdentification'] ?? {};
           final careInst = aiResult['careInstructions'] ?? {};
           
           final result = PlantIdentificationResult(
-            name: plantId['species'] ?? 'Unknown Plant',
-            scientificName: plantId['scientificName'] ?? '',
+            name: plantIdData['species'] ?? 'Unknown Plant',
+            scientificName: plantIdData['scientificName'] ?? '',
             category: _mapCategoryFromBackend(aiResult),
-            confidence: (plantId['confidence'] ?? 0.0).toDouble(),
+            confidence: (plantIdData['confidence'] ?? 0.0).toDouble(),
             description: _buildDescriptionFromBackend(aiResult),
             careInfo: _mapCareInfoFromBackend(careInst),
             tags: _generateTagsFromBackend(aiResult),
@@ -138,8 +73,11 @@ class AIService {
           
           _logger.i('📱 [FLUTTER-AI] ✅ Plant identification successful! (${result.name}, confidence: ${result.confidence})');
           
-          // Auto-save plant to database
-          await _savePlantToDatabase(result);
+          // Auto-save plant to database with image
+          final base64Image = base64Encode(imageBytes);
+          _logger.i('📱 [FLUTTER-AI] 📷 Created base64 image length: ${base64Image.length}');
+          final plantId = await _savePlantToDatabase(result, imageData: base64Image);
+          _logger.d('📱 [FLUTTER-AI] 💾 Auto-saved plant with ID: $plantId');
           
           return result;
         } else {
@@ -156,7 +94,7 @@ class AIService {
     }
   }
 
-  Future<PlantDiagnosisResult> diagnosePlantHealth(Uint8List imageBytes, {Map<String, dynamic>? plantContext}) async {
+  Future<PlantDiagnosisResult> diagnosePlantHealth(Uint8List imageBytes, {Map<String, dynamic>? plantContext, String? plantId}) async {
     _logger.i('📱 [FLUTTER-AI] 🩺 Starting plant health diagnosis... (${(imageBytes.length / 1024).toStringAsFixed(2)}KB)');
     
     try {
@@ -198,6 +136,11 @@ class AIService {
           );
           
           _logger.i('📱 [FLUTTER-AI] ✅ Plant diagnosis successful! (health: ${result.overallHealthScore}, issues: ${result.detectedIssues.length})');
+          
+          // Save diagnosis to database
+          final base64Image = base64Encode(imageBytes);
+          await _saveDiagnosisToDatabase(aiResult, result, plantId: plantId, imageData: base64Image);
+          
           return result;
         } else {
           _logger.e('📱 [FLUTTER-AI] ❌ Backend returned error: ${responseData['error']}');
@@ -216,7 +159,7 @@ class AIService {
   // Helper methods to map backend response to Flutter models
   String _mapCategoryFromBackend(Map<String, dynamic> aiResult) {
     final species = aiResult['plantIdentification']?['species']?.toString().toLowerCase() ?? '';
-    final commonNames = aiResult['plantIdentification']?['commonNames'] ?? [];
+    // final commonNames = aiResult['plantIdentification']?['commonNames'] ?? [];
     
     // Simple category mapping based on plant name
     if (species.contains('succulent') || species.contains('cactus')) return 'succulent';
@@ -306,13 +249,20 @@ class AIService {
     }).toList();
   }
 
-  // Save identified plant to database
-  Future<void> _savePlantToDatabase(PlantIdentificationResult plant) async {
+  // Save identified plant to database - returns the saved plant ID
+  Future<String?> _savePlantToDatabase(PlantIdentificationResult plant, {String? imageData}) async {
     try {
       _logger.i('📱 [FLUTTER-AI] 💾 Saving plant to database: ${plant.name}');
       
-      // Get device-based profile ID
+      // Get device-based profile ID - NEVER allow null/anonymous
       final profileId = await _getDeviceProfileId();
+      if (profileId.isEmpty) {
+        _logger.e('📱 [FLUTTER-AI] ❌ No valid profile ID - cannot save plant');
+        throw Exception('Failed to get device profile ID');
+      }
+      
+      _logger.i('📱 [FLUTTER-AI] 👤 Using profile ID for saving: $profileId');
+      _logger.i('📱 [FLUTTER-AI] 📷 Image data length: ${imageData?.length ?? 0}');
       
       final requestBody = {
         'plantData': {
@@ -324,6 +274,7 @@ class AIService {
           'tags': plant.tags,
         },
         'profileId': profileId,
+        'imageData': imageData, // Include base64 image data
       };
 
       final response = await _dio.post(
@@ -337,16 +288,105 @@ class AIService {
       if (response.statusCode == 201) {
         final responseData = response.data;
         if (responseData['success'] == true) {
-          _logger.i('📱 [FLUTTER-AI] ✅ Plant saved to database successfully!');
+          final plantId = responseData['plant']?['id'];
+          _logger.i('📱 [FLUTTER-AI] ✅ Plant saved to database successfully! ID: $plantId');
+          return plantId;
         } else {
           _logger.w('📱 [FLUTTER-AI] ⚠️ Plant save returned success=false: ${responseData['error']}');
+          return null;
+        }
+      } else {
+        _logger.w('📱 [FLUTTER-AI] ⚠️ Unexpected response status: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      _logger.e('📱 [FLUTTER-AI] ❌ Failed to save plant to database: $e');
+      // Don't throw - saving is not critical for identification
+      return null;
+    }
+  }
+
+  // Public method to save a Plant object and return the plant ID
+  Future<String> savePlant(Plant plant) async {
+    try {
+      _logger.i('📱 [FLUTTER-AI] 💾 Saving Plant object: ${plant.name}');
+      
+      // Convert Plant object to PlantIdentificationResult for saving
+      final plantResult = PlantIdentificationResult(
+        name: plant.name,
+        scientificName: plant.scientificName ?? '',
+        category: plant.species ?? 'unknown',
+        confidence: plant.confidence ?? 0.0,
+        description: plant.description ?? '',
+        careInfo: plant.careInstructions ?? {},
+        tags: plant.tags ?? [],
+      );
+      
+      // Use the first image if available
+      final imageData = plant.images.isNotEmpty ? plant.images.first : null;
+      
+      final plantId = await _savePlantToDatabase(plantResult, imageData: imageData);
+      
+      if (plantId == null) {
+        throw Exception('Failed to save plant - no ID returned');
+      }
+      
+      _logger.i('📱 [FLUTTER-AI] ✅ Plant saved successfully with ID: $plantId');
+      return plantId;
+    } catch (e) {
+      _logger.e('📱 [FLUTTER-AI] ❌ Failed to save Plant object: $e');
+      rethrow;
+    }
+  }
+
+  // Save diagnosis results to database
+  Future<void> _saveDiagnosisToDatabase(Map<String, dynamic> aiResult, PlantDiagnosisResult diagnosisResult, {String? plantId, String? imageData}) async {
+    try {
+      _logger.i('📱 [FLUTTER-AI] 💾 Saving diagnosis to database...');
+      
+      // Get device-based profile ID - NEVER allow null/anonymous
+      final profileId = await _getDeviceProfileId();
+      if (profileId.isEmpty) {
+        _logger.e('📱 [FLUTTER-AI] ❌ No valid profile ID - cannot save diagnosis');
+        throw Exception('Failed to get device profile ID');
+      }
+      
+      _logger.i('📱 [FLUTTER-AI] 👤 Using profile ID for saving diagnosis: $profileId');
+      
+      final requestBody = {
+        'diagnosisData': {
+          'plantIdentification': aiResult['plantIdentification'] ?? {},
+          'healthAssessment': aiResult['healthAssessment'] ?? {},
+          'careRecommendations': aiResult['careRecommendations'] ?? {},
+          'rawResponse': aiResult,
+          'processingTime': aiResult['processingTime'],
+          'images': imageData != null ? [imageData] : [], // Include the diagnosis image
+        },
+        'profileId': profileId,
+        'plantId': plantId, // Link diagnosis to specific plant
+      };
+
+      final response = await _dio.post(
+        '$_backendUrl/api/diagnoses/save',
+        data: requestBody,
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+        ),
+      );
+
+      if (response.statusCode == 201) {
+        final responseData = response.data;
+        if (responseData['success'] == true) {
+          _logger.i('📱 [FLUTTER-AI] ✅ Diagnosis saved to database successfully!');
+        } else {
+          _logger.w('📱 [FLUTTER-AI] ⚠️ Diagnosis save returned success=false: ${responseData['error']}');
         }
       } else {
         _logger.w('📱 [FLUTTER-AI] ⚠️ Unexpected response status: ${response.statusCode}');
       }
     } catch (e) {
-      _logger.e('📱 [FLUTTER-AI] ❌ Failed to save plant to database: $e');
-      // Don't throw - saving is not critical for identification
+      _logger.e('📱 [FLUTTER-AI] ❌ Failed to save diagnosis to database: $e');
+      // Don't throw - saving is not critical for diagnosis
     }
   }
 }

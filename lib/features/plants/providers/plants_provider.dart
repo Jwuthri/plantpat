@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:logger/logger.dart';
 
 import '../models/plant.dart';
+import '../../../core/services/user_profile_service.dart';
 
 class PlantsNotifier extends StateNotifier<AsyncValue<List<Plant>>> {
   PlantsNotifier() : super(const AsyncValue.loading()) {
@@ -11,6 +12,7 @@ class PlantsNotifier extends StateNotifier<AsyncValue<List<Plant>>> {
   
   final _logger = Logger();
   final _supabase = Supabase.instance.client;
+  final _profileService = UserProfileService();
 
   void _initialize() async {
     try {
@@ -21,20 +23,39 @@ class PlantsNotifier extends StateNotifier<AsyncValue<List<Plant>>> {
     }
   }
 
+  // Method to manually refresh plants (for debugging)
+  Future<void> refreshPlants() async {
+    state = const AsyncValue.loading();
+    try {
+      final plants = await _fetchPlants();
+      state = AsyncValue.data(plants);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+    }
+  }
+
+  // Get device-based profile ID using shared service
+  Future<String> _getDeviceProfileId() async {
+    return await _profileService.getProfileId();
+  }
+
   Future<List<Plant>> _fetchPlants() async {
     try {
+      // Get current user's profile ID
+      final profileId = await _getDeviceProfileId();
+      _logger.i('🌱 [PLANTS] 👤 Fetching plants for profile: $profileId');
+      
       final response = await _supabase
           .from('plants')
           .select()
           .eq('is_active', true)
+          .eq('profile_id', profileId) // Only get plants for this user
           .order('created_at', ascending: false);
 
-      _logger.i('🌱 Raw plants response: $response');
+      _logger.i('🌱 [PLANTS] 📊 Query results: ${response.length} plants found for profile: $profileId');
+      _logger.i('🌱 [PLANTS] 📄 Raw response: $response');
       
-      if (response == null) {
-        _logger.w('🌱 No plants data returned');
-        return [];
-      }
+      // Supabase always returns a list, even if empty
 
       final plantsList = response as List;
       if (plantsList.isEmpty) {
@@ -46,6 +67,7 @@ class PlantsNotifier extends StateNotifier<AsyncValue<List<Plant>>> {
       for (final json in plantsList) {
         try {
           final plant = Plant.fromJson(json as Map<String, dynamic>);
+          _logger.i('🌱 Loaded plant: ${plant.name}, images: ${plant.images.length}, first image length: ${plant.images.isNotEmpty ? plant.images.first.length : 0}');
           plants.add(plant);
         } catch (plantError) {
           _logger.w('🌱 Failed to parse plant: $plantError, data: $json');
@@ -53,7 +75,7 @@ class PlantsNotifier extends StateNotifier<AsyncValue<List<Plant>>> {
         }
       }
       
-      _logger.i('🌱 Successfully loaded ${plants.length} plants');
+      _logger.i('🌱 Successfully loaded ${plants.length} plants for current user');
       return plants;
     } catch (e) {
       _logger.e('Error fetching plants: $e');

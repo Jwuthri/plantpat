@@ -7,6 +7,7 @@ import '../providers/camera_provider.dart';
 import '../widgets/camera_actions.dart';
 import '../widgets/identification_result.dart';
 import '../widgets/diagnosis_result.dart';
+import '../widgets/plant_selection.dart';
 
 class CameraScreen extends ConsumerWidget {
   const CameraScreen({
@@ -25,7 +26,9 @@ class CameraScreen extends ConsumerWidget {
     final title = isIdentify ? 'Identify Plant' : 'Plant Health Check';
     final subtitle = isIdentify 
         ? 'Take a photo to identify plant species'
-        : 'Scan leaves to diagnose health issues';
+        : cameraState.selectedPlant == null 
+            ? 'Select a plant to check for health issues'
+            : 'Scan ${cameraState.selectedPlant!.name} leaves for diagnosis';
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
@@ -156,6 +159,17 @@ class CameraScreen extends ConsumerWidget {
       return DiagnosisResult(
         result: state.diagnosisResult!,
         onRetake: () => notifier.clearResults(),
+        linkedPlant: state.selectedPlant, // Pass the selected plant
+        diagnosisImage: state.diagnosisImageData, // Pass the diagnosis image
+      );
+    }
+
+    // For diagnosis action, show plant selection first if no plant is selected
+    if (action == 'diagnose' && state.selectedPlant == null) {
+      return PlantSelectionWidget(
+        onPlantSelected: (plant) {
+          notifier.selectPlant(plant);
+        },
       );
     }
 
@@ -164,6 +178,10 @@ class CameraScreen extends ConsumerWidget {
       action: action == 'identify' ? CameraAction.identify : CameraAction.diagnose,
       onTakePhoto: (action) => notifier.takePhoto(action: action),
       onPickFromGallery: (action) => notifier.pickFromGallery(action: action),
+      selectedPlant: state.selectedPlant,
+      onChangeSelectedPlant: action == 'diagnose' && state.selectedPlant != null
+          ? () => notifier.clearResults() // Clear all state to go back to plant selection
+          : null,
     );
   }
 }

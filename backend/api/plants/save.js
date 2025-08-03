@@ -24,23 +24,96 @@ module.exports = async (req, res) => {
 
   try {
     const supabase = getSupabase();
-    const { plantData, profileId } = req.body;
+    const { plantData, profileId, imageData } = req.body;
 
     console.log('🌱 [SAVE-PLANT] 💾 Saving plant to database...', {
       plantName: plantData.name,
-      profileId: profileId || 'anonymous',
-      confidence: plantData.confidence
+      profileId: profileId,
+      confidence: plantData.confidence,
+      hasImageData: !!imageData,
+      imageDataLength: imageData ? imageData.length : 0,
+      imageDataPreview: imageData ? imageData.substring(0, 50) + '...' : 'none'
     });
 
-    // Create plant record - temporarily use NULL profile_id to bypass foreign key
+    // ALWAYS require a valid profile ID - NO ANONYMOUS PROFILES ALLOWED
+    if (!profileId || profileId === 'anonymous') {
+      console.error('🌱 [SAVE-PLANT] ❌ No valid profile ID provided:', profileId);
+      return res.status(400).json({
+        success: false,
+        error: 'Profile ID is required - anonymous plants not allowed',
+        details: 'Every plant must be linked to a device-based profile'
+      });
+    }
+
+    console.log('🌱 [SAVE-PLANT] 👤 Ensuring profile exists for:', profileId);
+    let actualProfileId = null;
+    
+    try {
+      // Check if profile exists
+      const { data: existingProfile, error: profileCheckError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', profileId)
+        .single();
+
+      if (profileCheckError && profileCheckError.code === 'PGRST116') {
+        // Profile doesn't exist, create it
+        console.log('🌱 [SAVE-PLANT] ➕ Creating new profile:', profileId);
+        
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert([{
+            id: profileId,
+            name: 'Plant Lover', // Default name
+            preferences: {
+              notifications: true,
+              theme: 'system',
+              location: null
+            }
+          }])
+          .select('id')
+          .single();
+
+        if (createError) {
+          console.error('🌱 [SAVE-PLANT] ❌ Failed to create profile:', createError.message);
+          return res.status(500).json({
+            success: false,
+            error: 'Failed to create user profile',
+            details: createError.message
+          });
+        } else {
+          actualProfileId = newProfile.id;
+          console.log('🌱 [SAVE-PLANT] ✅ Profile created successfully:', actualProfileId);
+        }
+      } else if (existingProfile) {
+        actualProfileId = existingProfile.id;
+        console.log('🌱 [SAVE-PLANT] ✅ Profile already exists:', actualProfileId);
+      } else {
+        console.error('🌱 [SAVE-PLANT] ❌ Profile check failed:', profileCheckError?.message);
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to verify user profile',
+          details: profileCheckError?.message
+        });
+      }
+    } catch (profileError) {
+      console.error('🌱 [SAVE-PLANT] ❌ Profile handling error:', profileError.message);
+      return res.status(500).json({
+        success: false,
+        error: 'Profile management error',
+        details: profileError.message
+      });
+    }
+
+    // Create plant record with proper profile_id
     const plantRecord = {
-      profile_id: null, // Set to NULL for now to bypass foreign key constraint
+      profile_id: actualProfileId, // Use the actual profile ID
       name: plantData.name,
       species: plantData.name,
       scientific_name: plantData.scientificName,
       common_names: [plantData.name],
       description: plantData.description,
-      images: [], // Will add image handling later
+      images: imageData ? [imageData] : [], // Store base64 image data
       confidence: plantData.confidence,
       tags: plantData.tags || [],
       care_instructions: {
@@ -113,7 +186,9 @@ module.exports = async (req, res) => {
       console.log('🌱 [SAVE-PLANT] ✅ Plant saved successfully!', {
         plantId: data.id,
         name: data.name,
-        profile_id: data.profile_id
+        profile_id: data.profile_id,
+        imagesSaved: data.images ? data.images.length : 0,
+        firstImageLength: data.images && data.images[0] ? data.images[0].length : 0
       });
 
       res.status(201).json({
@@ -121,7 +196,7 @@ module.exports = async (req, res) => {
         message: 'Plant saved successfully to database!',
         plant: {
           ...data,
-          profile_id: profileId || null // Return the original profileId in response
+          profile_id: actualProfileId // Return the actual profile_id that was saved
         }
       });
       
@@ -137,7 +212,7 @@ module.exports = async (req, res) => {
           name: plantRecord.name,
           scientific_name: plantRecord.scientific_name,
           confidence: plantRecord.confidence,
-          profile_id: plantRecord.profile_id,
+          profile_id: actualProfileId, // Use the actual profile_id
           error: 'Database save failed, but identification was successful'
         }
       });

@@ -38,6 +38,10 @@ const plantRoutes = {
   save: require('./api/plants/save')
 };
 
+const diagnosisRoutes = {
+  save: require('./api/diagnoses/save')
+};
+
 // Auth routes
 app.all('/api/auth/login', authRoutes.login);
 app.all('/api/auth/logout', authRoutes.logout);
@@ -50,6 +54,9 @@ app.all('/api/ai/diagnose', aiRoutes.diagnose);
 
 // Plant routes
 app.all('/api/plants/save', plantRoutes.save);
+
+// Diagnosis routes
+app.all('/api/diagnoses/save', diagnosisRoutes.save);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -64,7 +71,8 @@ app.get('/health', (req, res) => {
       '/api/auth/register',
       '/api/ai/identify',
       '/api/ai/diagnose',
-      '/api/plants/save'
+      '/api/plants/save',
+      '/api/diagnoses/save'
     ]
   });
 });
@@ -109,7 +117,9 @@ app.use('*', (req, res) => {
       'GET /api/auth/profile',
       'POST /api/auth/register',
       'POST /api/ai/identify',
-      'POST /api/ai/diagnose'
+      'POST /api/ai/diagnose',
+      'POST /api/plants/save',
+      'POST /api/diagnoses/save'
     ]
   });
 });
