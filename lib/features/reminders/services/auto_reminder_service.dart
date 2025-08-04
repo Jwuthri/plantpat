@@ -31,19 +31,23 @@ class AutoReminderService {
         final type = entry.key;
         final suggestions = entry.value;
         
+        // Combine suggestions of the same type into one optimized reminder
+        final combinedReminder = _combineSuggestionsOfSameType(suggestions);
+        final validType = _mapToValidReminderType(combinedReminder.type);
+        
         try {
-          // Combine suggestions of the same type into one optimized reminder
-          final combinedReminder = _combineSuggestionsOfSameType(suggestions);
-          
           // Calculate the first due date based on the interval
           final now = DateTime.now();
           final dueDate = now.add(Duration(days: combinedReminder.daysInterval));
           
-          _logger.i('🤖 [AUTO-REMINDER] Creating $type reminder: ${combinedReminder.title}');
+          if (validType != combinedReminder.type) {
+            _logger.i('🤖 [AUTO-REMINDER] Mapped "${combinedReminder.type}" → "$validType"');
+          }
+          _logger.i('🤖 [AUTO-REMINDER] Creating $validType reminder: ${combinedReminder.title}');
           
           final createdReminder = await remindersNotifier.createReminder(
             plantId: plantId,
-            type: combinedReminder.type,
+            type: validType,
             title: combinedReminder.title,
             description: combinedReminder.description,
             dueDate: dueDate,
@@ -53,10 +57,10 @@ class AutoReminderService {
 
           if (createdReminder != null) {
             createdReminderIds.add(createdReminder.id);
-            _logger.i('🤖 [AUTO-REMINDER] ✅ Created $type reminder: ${createdReminder.title}');
+            _logger.i('🤖 [AUTO-REMINDER] ✅ Created $validType reminder: ${createdReminder.title}');
           }
         } catch (e) {
-          _logger.e('🤖 [AUTO-REMINDER] ❌ Failed to create $type reminder: $e');
+          _logger.e('🤖 [AUTO-REMINDER] ❌ Failed to create $validType reminder: $e');
         }
       }
 
@@ -186,6 +190,44 @@ class AutoReminderService {
         return 1;
       default:
         return 1;
+    }
+  }
+
+  /// Map AI-suggested reminder types to valid backend types
+  static String _mapToValidReminderType(String aiType) {
+    switch (aiType.toLowerCase()) {
+      case 'watering':
+      case 'water':
+        return 'watering';
+      case 'fertilizing':
+      case 'fertilizer':
+      case 'feeding':
+      case 'nutrients':
+        return 'fertilizing';
+      case 'health_check':
+      case 'health check':
+      case 'inspection':
+      case 'monitoring':
+        return 'health_check';
+      case 'repotting':
+      case 'repot':
+      case 'transplanting':
+        return 'repotting';
+      case 'humidity':
+      case 'misting':
+      case 'air_humidity':
+      case 'environment':
+      case 'lighting':
+      case 'light':
+      case 'pruning':
+      case 'trimming':
+      case 'deadheading':
+      case 'cleaning':
+      case 'rotation':
+      case 'positioning':
+        return 'custom'; // Map environmental/care tasks to custom
+      default:
+        return 'custom'; // Default fallback for unknown types
     }
   }
 }

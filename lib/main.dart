@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 import 'core/config/supabase_config.dart';
 import 'core/router/app_router.dart';
@@ -9,6 +10,9 @@ import 'core/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize timezone data for scheduled notifications
+  tz.initializeTimeZones();
   
   await Supabase.initialize(
     url: SupabaseConfig.url,

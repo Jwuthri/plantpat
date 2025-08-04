@@ -144,13 +144,6 @@ class CameraScreen extends ConsumerWidget {
       return IdentificationResult(
         result: state.identificationResult!,
         plant: state.identifiedPlant!,
-        onSave: () async {
-          await notifier.saveIdentifiedPlant();
-          if (context.mounted) {
-            context.go('/home');
-          }
-        },
-        onRetake: () => notifier.clearResults(),
       );
     }
 
@@ -158,7 +151,6 @@ class CameraScreen extends ConsumerWidget {
     if (state.diagnosisResult != null && action == 'diagnose') {
       return DiagnosisResult(
         result: state.diagnosisResult!,
-        onRetake: () => notifier.clearResults(),
         linkedPlant: state.selectedPlant, // Pass the selected plant
         diagnosisImage: state.diagnosisImageData, // Pass the diagnosis image
       );

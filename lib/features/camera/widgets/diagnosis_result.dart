@@ -10,13 +10,11 @@ class DiagnosisResult extends StatelessWidget {
   const DiagnosisResult({
     super.key,
     required this.result,
-    required this.onRetake,
     this.linkedPlant,
     this.diagnosisImage,
   });
 
   final PlantDiagnosisResult result;
-  final VoidCallback onRetake;
   final Plant? linkedPlant;
   final String? diagnosisImage;
 
@@ -299,42 +297,7 @@ class DiagnosisResult extends StatelessWidget {
                 ],
               ),
             ),
-          
-          // Action Buttons
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: onRetake,
-                  icon: const Icon(Icons.camera_alt),
-                  label: const Text('Scan Again'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    side: const BorderSide(color: Color(0xFF66BB6A), width: 2),
-                    foregroundColor: const Color(0xFF66BB6A),
-                    backgroundColor: Colors.transparent,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    // TODO: Save diagnosis or navigate to detailed view
-                  },
-                  icon: const Icon(Icons.save),
-                  label: const Text('Save Results'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF66BB6A),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    elevation: 8,
-                    shadowColor: const Color(0xFF66BB6A).withOpacity(0.3),
-                  ),
-                ),
-              ),
-            ],
-          ),
+
           ],
         ),
       ),

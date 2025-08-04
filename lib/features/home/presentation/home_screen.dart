@@ -78,13 +78,13 @@ class HomeScreen extends ConsumerWidget {
                                 ),
                               ),
                               child: IconButton(
-                                onPressed: () => context.go('/reminders'),
+                                onPressed: () => _showNotificationOptions(context),
                                 icon: Icon(
                                   Icons.notifications_outlined,
                                   color: AppTheme.plantGreen,
                                   size: 24,
                                 ),
-                                tooltip: 'Reminders',
+                                tooltip: 'Notifications',
                               ),
                             ),
                           ],
@@ -202,6 +202,82 @@ class HomeScreen extends ConsumerWidget {
     if (hour < 12) return 'morning';
     if (hour < 17) return 'afternoon';
     return 'evening';
+  }
+
+  void _showNotificationOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.outline,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Notifications',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+            ),
+            const SizedBox(height: 24),
+            _CameraOptionTile(
+              title: 'View Reminders',
+              subtitle: 'See all your plant care reminders',
+              icon: Icons.list_alt,
+              color: AppTheme.plantGreen,
+              onTap: () {
+                Navigator.pop(context);
+                context.go('/reminders');
+              },
+            ),
+            const SizedBox(height: 12),
+            _CameraOptionTile(
+              title: 'Test Notification',
+              subtitle: 'Send a test notification to your phone',
+              icon: Icons.notification_add,
+              color: Colors.orange,
+              onTap: () async {
+                Navigator.pop(context);
+                try {
+                  await NotificationService.showTestNotification();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('🔔 Test notification sent! Check your notification panel.'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('❌ Failed to send notification: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              },
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showCameraOptions(BuildContext context) {

@@ -9,14 +9,10 @@ class IdentificationResult extends StatelessWidget {
     super.key,
     required this.result,
     required this.plant,
-    required this.onSave,
-    required this.onRetake,
   });
 
   final PlantIdentificationResult result;
   final Plant plant;
-  final VoidCallback onSave;
-  final VoidCallback onRetake;
 
   @override
   Widget build(BuildContext context) {
@@ -247,40 +243,7 @@ class IdentificationResult extends StatelessWidget {
                   ],
                 ),
               ),
-            
-            // Action Buttons
-            Row(
-              children: [
-                              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: onRetake,
-                  icon: const Icon(Icons.camera_alt),
-                  label: const Text('Retake Photo'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    side: const BorderSide(color: Color(0xFF66BB6A), width: 2),
-                    foregroundColor: const Color(0xFF66BB6A),
-                    backgroundColor: Colors.transparent,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: onSave,
-                  icon: const Icon(Icons.save),
-                  label: const Text('Save to Collection'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF66BB6A),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    elevation: 8,
-                    shadowColor: const Color(0xFF66BB6A).withOpacity(0.3),
-                  ),
-                ),
-              ),
-              ],
-            ),
+
           ],
         ),
       ),

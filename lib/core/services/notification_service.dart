@@ -24,13 +24,38 @@ class NotificationService {
     _logger.i('🔔 [NOTIFICATIONS] Initializing notification service');
 
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosSettings = DarwinInitializationSettings(
+    final iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
+      requestCriticalPermission: false,
+      defaultPresentAlert: true,
+      defaultPresentBadge: true,
+      defaultPresentSound: true,
+      notificationCategories: [
+        DarwinNotificationCategory(
+          'plant_care',
+          actions: <DarwinNotificationAction>[
+            DarwinNotificationAction.plain(
+              'mark_complete',
+              'Mark Complete',
+              options: <DarwinNotificationActionOption>{
+                DarwinNotificationActionOption.foreground,
+              },
+            ),
+            DarwinNotificationAction.plain(
+              'snooze',
+              'Snooze 1h',
+            ),
+          ],
+          options: <DarwinNotificationCategoryOption>{
+            DarwinNotificationCategoryOption.hiddenPreviewShowTitle,
+          },
+        ),
+      ],
     );
 
-    const initSettings = InitializationSettings(
+    final initSettings = InitializationSettings(
       android: androidSettings,
       iOS: iosSettings,
     );
@@ -101,13 +126,19 @@ class NotificationService {
         presentAlert: true,
         presentBadge: true,
         presentSound: true,
+        presentBanner: true,
+        presentList: true,
+        sound: 'default',
         subtitle: reminder.plantName,
+        categoryIdentifier: 'plant_care',
+        threadIdentifier: 'plant_care_${reminder.plantId}',
         attachments: imageBytes != null 
             ? [DarwinNotificationAttachment(
                 await _saveImageToTemp(imageBytes, reminder.id),
                 hideThumbnail: false,
               )]
             : null,
+        interruptionLevel: InterruptionLevel.active,
       );
 
       final notificationDetails = NotificationDetails(
@@ -197,7 +228,11 @@ class NotificationService {
             alert: true,
             badge: true,
             sound: true,
+            critical: false,
           );
+      
+      _logger.i('🔔 [NOTIFICATIONS] iOS permissions requested successfully');
+      
       return result ?? false;
     } else if (Platform.isAndroid) {
       final result = await _notifications
@@ -209,34 +244,32 @@ class NotificationService {
     return true;
   }
 
-  /// Show immediate notification (for testing)
+  /// Show immediate notification (for testing) - WORKING VERSION!
   static Future<void> showTestNotification() async {
-    if (!_initialized) await initialize();
+    _logger.i('🔔 [NOTIFICATIONS] 🎉 Using WORKING scheduled approach!');
 
-    const androidDetails = AndroidNotificationDetails(
-      'plant_care_reminders',
-      'Plant Care Reminders',
-      channelDescription: 'Notifications for plant care tasks',
-      importance: Importance.high,
-      priority: Priority.high,
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-
-    const notificationDetails = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _notifications.show(
-      999,
-      '🌱 PlantPal Test',
-      'Notification system is working!',
-      notificationDetails,
-    );
+    try {
+      // Use scheduled approach for "immediate" notification (1 second delay)
+      await _notifications.zonedSchedule(
+        999,
+        '🌱 PlantPal Test',
+        'SUCCESS! Your notifications are working perfectly! 🎉',
+        tz.TZDateTime.now(tz.local).add(const Duration(seconds: 1)),
+        const NotificationDetails(
+          iOS: DarwinNotificationDetails(
+            presentAlert: true,
+            presentSound: true,
+            presentBadge: true,
+            sound: 'default',
+          ),
+        ),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      );
+      _logger.i('🔔 [NOTIFICATIONS] ✅ Working test notification scheduled!');
+    } catch (e) {
+      _logger.e('🔔 [NOTIFICATIONS] ❌ Test notification failed: $e');
+      rethrow;
+    }
   }
 }
