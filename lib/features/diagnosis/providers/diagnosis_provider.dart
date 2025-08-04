@@ -154,3 +154,16 @@ final recentDiagnosesProvider = Provider<AsyncValue<List<DiagnosisRecord>>>((ref
     error: (error, stack) => AsyncValue.error(error, stack),
   );
 });
+
+// Provider to get diagnoses for a specific plant
+final plantDiagnosesProvider = Provider.family<AsyncValue<List<DiagnosisRecord>>, String>((ref, plantId) {
+  final diagnoses = ref.watch(diagnosisNotifierProvider);
+  return diagnoses.when(
+    data: (diagnosisList) {
+      final plantDiagnoses = diagnosisList.where((diagnosis) => diagnosis.plantId == plantId).toList();
+      return AsyncValue.data(plantDiagnoses);
+    },
+    loading: () => const AsyncValue.loading(),
+    error: (error, stack) => AsyncValue.error(error, stack),
+  );
+});
