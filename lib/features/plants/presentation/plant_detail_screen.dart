@@ -348,21 +348,30 @@ class PlantDetailScreen extends ConsumerWidget {
               children: [
                 Icon(Icons.health_and_safety, color: AppTheme.warningColor, size: 24),
                 const SizedBox(width: 12),
-                const Text(
-                  'Health History',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                const Expanded(
+                  child: Text(
+                    'Health History',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-                const Spacer(),
-                TextButton.icon(
-                  onPressed: () => context.go('/camera/diagnose'),
-                  icon: const Icon(Icons.add_circle_outline),
-                  label: const Text('New Check'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppTheme.warningColor,
+                Flexible(
+                  child: TextButton.icon(
+                    onPressed: () => context.go('/camera?action=diagnose'),
+                    icon: const Icon(Icons.add_circle_outline, size: 16),
+                    label: const Text(
+                      'New',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppTheme.warningColor,
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      minimumSize: const Size(0, 28),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                   ),
                 ),
               ],
@@ -404,7 +413,7 @@ class PlantDetailScreen extends ConsumerWidget {
                 }
                 
                 return Column(
-                  children: diagnoses.take(3).map((diagnosis) => _buildDiagnosisCard(diagnosis)).toList(),
+                  children: diagnoses.take(3).map((diagnosis) => _buildDiagnosisCard(context, diagnosis)).toList(),
                 );
               },
               loading: () => const Padding(
@@ -425,7 +434,7 @@ class PlantDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDiagnosisCard(DiagnosisRecord diagnosis) {
+  Widget _buildDiagnosisCard(BuildContext context, DiagnosisRecord diagnosis) {
     final overallHealth = diagnosis.overallHealth;
     
     Color healthColor;
@@ -447,18 +456,20 @@ class PlantDetailScreen extends ConsumerWidget {
         healthColor = Colors.grey;
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: healthColor.withOpacity(0.3),
-          width: 1,
+    return GestureDetector(
+      onTap: () => context.go('/diagnosis/${diagnosis.id}'),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: healthColor.withOpacity(0.3),
+            width: 1,
+          ),
+          color: const Color(0xFF1E1E1E),
         ),
-        color: const Color(0xFF1E1E1E),
-      ),
-      child: Row(
+        child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
@@ -525,6 +536,7 @@ class PlantDetailScreen extends ConsumerWidget {
             ),
           ],
         ],
+        ),
       ),
     );
   }

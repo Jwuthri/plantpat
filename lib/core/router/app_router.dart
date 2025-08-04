@@ -6,6 +6,7 @@ import '../../features/camera/presentation/camera_screen.dart';
 import '../../features/plants/presentation/plants_screen.dart';
 import '../../features/plants/presentation/plant_detail_screen.dart';
 import '../../features/diagnosis/presentation/diagnosis_screen.dart';
+import '../../features/diagnosis/presentation/diagnosis_detail_screen.dart';
 import '../../features/reminders/presentation/reminders_screen.dart';
 import '../../shared/presentation/splash_screen.dart';
 
@@ -50,6 +51,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/diagnosis',
         name: 'diagnosis',
         builder: (context, state) => const DiagnosisScreen(),
+        routes: [
+          GoRoute(
+            path: ':diagnosisId',
+            name: 'diagnosis-detail',
+            builder: (context, state) {
+              final diagnosisId = state.pathParameters['diagnosisId']!;
+              return DiagnosisDetailScreen(diagnosisId: diagnosisId);
+            },
+          ),
+        ],
       ),
       GoRoute(
         path: '/reminders',

@@ -208,11 +208,15 @@ class _PlantCard extends ConsumerWidget {
                           color: Colors.blue[600],
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          plant.wateringFrequency ?? 'Weekly',
-                          style: Theme.of(context).textTheme.bodySmall,
+                        Expanded(
+                          child: Text(
+                            plant.wateringFrequency ?? 'Weekly',
+                            style: Theme.of(context).textTheme.bodySmall,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        const Spacer(),
+                        const SizedBox(width: 8),
                         if (plant.confidence != null)
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
