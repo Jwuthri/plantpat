@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/config/supabase_config.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,6 +14,10 @@ void main() async {
     url: SupabaseConfig.url,
     anonKey: SupabaseConfig.anonKey,
   );
+  
+  // Initialize notifications
+  await NotificationService.initialize();
+  await NotificationService.requestPermissions();
   
   runApp(
     const ProviderScope(
@@ -27,6 +32,11 @@ class PlantPalApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
+    
+    // Set up navigation callback for notifications
+    NotificationService.setNavigationCallback((reminderId) {
+      router.go('/reminders/$reminderId');
+    });
     
     return MaterialApp.router(
       title: 'PlantPal',

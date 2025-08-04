@@ -3,16 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/suggested_reminder.dart';
 import '../providers/reminders_provider.dart';
-import '../../../core/services/user_profile_service.dart';
-
 /// Service to automatically create reminders from AI suggestions
 class AutoReminderService {
   static final _logger = Logger();
-  static final _profileService = UserProfileService();
 
   /// Automatically create reminders from suggested reminders for a specific plant
   static Future<List<String>> createRemindersFromSuggestions(
-    WidgetRef ref,
+    Ref ref,
     String plantId,
     List<SuggestedReminder> suggestedReminders,
   ) async {
@@ -27,38 +24,39 @@ class AutoReminderService {
     final createdReminderIds = <String>[];
 
     try {
-      final profileId = await _profileService.getProfileId();
+      // Group suggestions by type to create only one reminder per type
+      final groupedSuggestions = _groupSuggestionsByType(suggestedReminders);
       
-      for (final suggestion in suggestedReminders) {
+      for (final entry in groupedSuggestions.entries) {
+        final type = entry.key;
+        final suggestions = entry.value;
+        
         try {
+          // Combine suggestions of the same type into one optimized reminder
+          final combinedReminder = _combineSuggestionsOfSameType(suggestions);
+          
           // Calculate the first due date based on the interval
           final now = DateTime.now();
-          final dueDate = now.add(Duration(days: suggestion.daysInterval));
+          final dueDate = now.add(Duration(days: combinedReminder.daysInterval));
           
-          _logger.i('🤖 [AUTO-REMINDER] Creating ${suggestion.type} reminder: ${suggestion.title}');
+          _logger.i('🤖 [AUTO-REMINDER] Creating $type reminder: ${combinedReminder.title}');
           
-          final reminderData = {
-            'title': suggestion.title,
-            'description': suggestion.description,
-            'type': suggestion.type,
-            'dueDate': dueDate,
-            'recurring': suggestion.recurring,
-            'recurringInterval': _mapFrequencyToInterval(suggestion.frequency),
-            'priority': suggestion.priority,
-          };
-
           final createdReminder = await remindersNotifier.createReminder(
-            profileId: profileId,
             plantId: plantId,
-            reminderData: reminderData,
+            type: combinedReminder.type,
+            title: combinedReminder.title,
+            description: combinedReminder.description,
+            dueDate: dueDate,
+            recurring: combinedReminder.recurring,
+            recurringInterval: _mapFrequencyToInterval(combinedReminder.frequency),
           );
 
           if (createdReminder != null) {
             createdReminderIds.add(createdReminder.id);
-            _logger.i('🤖 [AUTO-REMINDER] ✅ Created reminder: ${createdReminder.title}');
+            _logger.i('🤖 [AUTO-REMINDER] ✅ Created $type reminder: ${createdReminder.title}');
           }
         } catch (e) {
-          _logger.e('🤖 [AUTO-REMINDER] ❌ Failed to create reminder ${suggestion.title}: $e');
+          _logger.e('🤖 [AUTO-REMINDER] ❌ Failed to create $type reminder: $e');
         }
       }
 
@@ -94,9 +92,9 @@ class AutoReminderService {
     final typeCount = reminderTypes.length;
     
     if (typeCount == 1) {
-      return '${suggestions.length} ${reminderTypes.first} reminder${suggestions.length > 1 ? 's' : ''} created';
+      return '1 ${reminderTypes.first} reminder created';
     } else {
-      return '${suggestions.length} reminders created (${reminderTypes.join(', ')})';
+      return '$typeCount reminders created (${reminderTypes.join(', ')})';
     }
   }
 
@@ -125,5 +123,69 @@ class AutoReminderService {
     }
     
     return grouped;
+  }
+
+  /// Group suggestions by type (internal helper)
+  static Map<String, List<SuggestedReminder>> _groupSuggestionsByType(
+    List<SuggestedReminder> suggestions,
+  ) {
+    final grouped = <String, List<SuggestedReminder>>{};
+    
+    for (final suggestion in suggestions) {
+      grouped.putIfAbsent(suggestion.type, () => []).add(suggestion);
+    }
+    
+    return grouped;
+  }
+
+  /// Combine multiple suggestions of the same type into one optimized reminder
+  static SuggestedReminder _combineSuggestionsOfSameType(
+    List<SuggestedReminder> suggestions,
+  ) {
+    if (suggestions.length == 1) {
+      return suggestions.first;
+    }
+
+    // Use the highest priority suggestion as base
+    final sortedByPriority = suggestions.toList()
+      ..sort((a, b) => _priorityValue(b.priority).compareTo(_priorityValue(a.priority)));
+    
+    final primary = sortedByPriority.first;
+    
+    // Use the most conservative (shortest) interval for safety
+    final shortestInterval = suggestions
+        .map((s) => s.daysInterval)
+        .reduce((a, b) => a < b ? a : b);
+    
+    // Combine descriptions for better context
+    final descriptions = suggestions
+        .map((s) => s.description)
+        .where((desc) => desc.isNotEmpty)
+        .toSet()
+        .join('. ');
+    
+    return SuggestedReminder(
+      type: primary.type,
+      title: primary.title,
+      description: descriptions.isNotEmpty ? descriptions : primary.description,
+      daysInterval: shortestInterval,
+      frequency: primary.frequency,
+      priority: primary.priority,
+      recurring: primary.recurring,
+    );
+  }
+
+  /// Convert priority string to numeric value for sorting
+  static int _priorityValue(String priority) {
+    switch (priority.toLowerCase()) {
+      case 'high':
+        return 3;
+      case 'medium':
+        return 2;
+      case 'low':
+        return 1;
+      default:
+        return 1;
+    }
   }
 }

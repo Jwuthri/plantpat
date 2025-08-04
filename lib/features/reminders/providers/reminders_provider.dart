@@ -5,6 +5,7 @@ import 'package:logger/logger.dart';
 import '../../../core/config/api_config.dart';
 import '../models/reminder_simple.dart';
 import '../../../core/services/user_profile_service.dart';
+import '../../../core/services/notification_service.dart';
 
 class RemindersNotifier extends StateNotifier<AsyncValue<List<ReminderSimple>>> {
   RemindersNotifier() : super(const AsyncValue.loading()) {
@@ -134,6 +135,14 @@ class RemindersNotifier extends StateNotifier<AsyncValue<List<ReminderSimple>>> 
           final reminder = ReminderSimple.fromJson(responseData['reminder']);
           _logger.i('📅 [REMINDERS] ✅ Reminder created successfully: ${reminder.id}');
           
+          // Schedule notification for the reminder
+          try {
+            await NotificationService.scheduleReminderNotification(reminder);
+            _logger.i('📅 [REMINDERS] 🔔 Notification scheduled for: ${reminder.title}');
+          } catch (e) {
+            _logger.w('📅 [REMINDERS] ⚠️ Failed to schedule notification: $e');
+          }
+          
           // Refresh the state
           refreshReminders();
           return reminder;
@@ -169,6 +178,14 @@ class RemindersNotifier extends StateNotifier<AsyncValue<List<ReminderSimple>>> 
         if (responseData['success'] == true) {
           final reminder = ReminderSimple.fromJson(responseData['reminder']);
           _logger.i('📅 [REMINDERS] ✅ Reminder completed successfully: ${reminder.id}');
+          
+          // Cancel the scheduled notification
+          try {
+            await NotificationService.cancelReminderNotification(reminder.id);
+            _logger.i('📅 [REMINDERS] 🔕 Notification cancelled for: ${reminder.title}');
+          } catch (e) {
+            _logger.w('📅 [REMINDERS] ⚠️ Failed to cancel notification: $e');
+          }
           
           // Refresh the state
           refreshReminders();

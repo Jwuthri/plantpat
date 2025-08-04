@@ -8,6 +8,7 @@ import '../../features/plants/presentation/plant_detail_screen.dart';
 import '../../features/diagnosis/presentation/diagnosis_screen.dart';
 import '../../features/diagnosis/presentation/diagnosis_detail_screen.dart';
 import '../../features/reminders/presentation/reminders_screen.dart';
+import '../../features/reminders/presentation/reminder_detail_screen.dart';
 import '../../shared/presentation/splash_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -66,6 +67,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/reminders',
         name: 'reminders',
         builder: (context, state) => const RemindersScreen(),
+        routes: [
+          GoRoute(
+            path: ':reminderId',
+            name: 'reminder-detail',
+            builder: (context, state) {
+              final reminderId = state.pathParameters['reminderId']!;
+              return ReminderDetailScreen(reminderId: reminderId);
+            },
+          ),
+        ],
       ),
     ],
   );

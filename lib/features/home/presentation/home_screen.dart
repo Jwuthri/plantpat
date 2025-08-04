@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../plants/providers/plants_provider.dart';
 import '../widgets/quick_action_card.dart';
-
 import '../widgets/stats_overview.dart';
+import '../../../core/services/notification_service.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});

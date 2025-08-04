@@ -26,6 +26,7 @@
         "riverpod_annotation",
         "shared_preferences",
         "supabase_flutter",
+        "timezone",
         "uuid"
       ],
       "devDependencies": [
@@ -308,6 +309,13 @@
         "http_parser",
         "meta",
         "web"
+      ]
+    },
+    {
+      "name": "timezone",
+      "version": "0.9.4",
+      "dependencies": [
+        "path"
       ]
     },
     {
@@ -1141,13 +1149,6 @@
         "source_span",
         "string_scanner",
         "typed_data"
-      ]
-    },
-    {
-      "name": "timezone",
-      "version": "0.9.4",
-      "dependencies": [
-        "path"
       ]
     },
     {
