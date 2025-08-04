@@ -42,6 +42,12 @@ const diagnosisRoutes = {
   save: require('./api/diagnoses/save')
 };
 
+const reminderRoutes = {
+  list: require('./api/reminders/list'),
+  create: require('./api/reminders/create'),
+  complete: require('./api/reminders/complete')
+};
+
 // Auth routes
 app.all('/api/auth/login', authRoutes.login);
 app.all('/api/auth/logout', authRoutes.logout);
@@ -58,6 +64,11 @@ app.all('/api/plants/save', plantRoutes.save);
 // Diagnosis routes
 app.all('/api/diagnoses/save', diagnosisRoutes.save);
 
+// Reminder routes
+app.all('/api/reminders/list', reminderRoutes.list);
+app.all('/api/reminders/create', reminderRoutes.create);
+app.all('/api/reminders/complete', reminderRoutes.complete);
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({
@@ -72,7 +83,10 @@ app.get('/health', (req, res) => {
       '/api/ai/identify',
       '/api/ai/diagnose',
       '/api/plants/save',
-      '/api/diagnoses/save'
+      '/api/diagnoses/save',
+      '/api/reminders/list',
+      '/api/reminders/create',
+      '/api/reminders/complete'
     ]
   });
 });
@@ -119,7 +133,10 @@ app.use('*', (req, res) => {
       'POST /api/ai/identify',
       'POST /api/ai/diagnose',
       'POST /api/plants/save',
-      'POST /api/diagnoses/save'
+      'POST /api/diagnoses/save',
+      'GET /api/reminders/list',
+      'POST /api/reminders/create',
+      'POST /api/reminders/complete'
     ]
   });
 });

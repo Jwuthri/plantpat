@@ -9,6 +9,9 @@ import '../providers/plants_provider.dart';
 import '../models/plant.dart';
 import '../../diagnosis/providers/diagnosis_provider.dart';
 import '../../diagnosis/models/diagnosis_database.dart';
+import '../../reminders/widgets/create_reminder_dialog.dart';
+import '../../reminders/providers/reminders_provider.dart';
+import '../../reminders/models/reminder_simple.dart';
 
 class PlantDetailScreen extends ConsumerWidget {
   const PlantDetailScreen({
@@ -22,6 +25,7 @@ class PlantDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final plantState = ref.watch(plantProvider(plantId));
     final diagnosesState = ref.watch(plantDiagnosesProvider(plantId));
+    final plantRemindersState = ref.watch(plantRemindersProvider(plantId));
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
@@ -30,7 +34,7 @@ class PlantDetailScreen extends ConsumerWidget {
           if (plant == null) {
             return _buildPlantNotFound(context);
           }
-          return _buildPlantDetails(context, plant, diagnosesState);
+          return _buildPlantDetails(context, ref, plant, diagnosesState, plantRemindersState);
         },
         loading: () => _buildLoading(),
         error: (error, stack) => _buildError(context, error),
@@ -59,7 +63,13 @@ class PlantDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPlantDetails(BuildContext context, Plant plant, AsyncValue<List<DiagnosisRecord>> diagnosesState) {
+  Widget _buildPlantDetails(
+    BuildContext context, 
+    WidgetRef ref, 
+    Plant plant, 
+    AsyncValue<List<DiagnosisRecord>> diagnosesState,
+    AsyncValue<List<ReminderSimple>> plantRemindersState,
+  ) {
     return CustomScrollView(
       slivers: [
         SliverAppBar(
@@ -85,6 +95,8 @@ class PlantDetailScreen extends ConsumerWidget {
                   const SizedBox(height: 24),
                 ],
                 _buildDiagnosesSection(context, plant, diagnosesState),
+            const SizedBox(height: 20),
+            _buildRemindersSection(context, ref, plant, plantRemindersState),
               ],
             ),
           ),
@@ -539,6 +551,315 @@ class PlantDetailScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildRemindersSection(
+    BuildContext context, 
+    WidgetRef ref, 
+    Plant plant, 
+    AsyncValue<List<ReminderSimple>> plantRemindersState,
+  ) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            colors: [
+              const Color(0xFF2A2A2A),
+              const Color(0xFF3A3A3A),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.schedule, color: AppTheme.warningColor, size: 24),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    'Care Reminders',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Flexible(
+                  child: TextButton.icon(
+                    onPressed: () => _showCreateReminderDialog(context, ref, plant),
+                    icon: const Icon(Icons.add_circle_outline, size: 16),
+                    label: const Text(
+                      'Add',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppTheme.warningColor,
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      minimumSize: const Size(0, 28),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            
+            plantRemindersState.when(
+              data: (reminders) {
+                if (reminders.isEmpty) {
+                  return Container(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.schedule_outlined,
+                          size: 48,
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'No Reminders Set',
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Create reminders to keep ${plant.name} healthy',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                
+                // Show pending reminders first, then completed
+                final pendingReminders = reminders.where((r) => !r.completed).toList();
+                final completedReminders = reminders.where((r) => r.completed).toList();
+                
+                return Column(
+                  children: [
+                    if (pendingReminders.isNotEmpty) ...[
+                      ...pendingReminders.take(3).map((reminder) => _buildReminderCard(context, ref, reminder)),
+                      if (pendingReminders.length > 3) ...[
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: () => context.go('/reminders'),
+                          child: Text(
+                            'View all ${pendingReminders.length} reminders',
+                            style: TextStyle(color: AppTheme.warningColor),
+                          ),
+                        ),
+                      ],
+                    ],
+                    if (completedReminders.isNotEmpty && pendingReminders.isEmpty) ...[
+                      ...completedReminders.take(2).map((reminder) => _buildReminderCard(context, ref, reminder)),
+                    ],
+                  ],
+                );
+              },
+              loading: () => const Padding(
+                padding: EdgeInsets.all(24),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (error, stack) => Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Colors.red[400],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Failed to Load Reminders',
+                      style: TextStyle(
+                        color: Colors.red[400],
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () => ref.refresh(plantRemindersProvider(plant.id)),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReminderCard(BuildContext context, WidgetRef ref, ReminderSimple reminder) {
+    final priorityColor = _getReminderPriorityColor(reminder);
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: priorityColor.withOpacity(0.3),
+        ),
+        color: const Color(0xFF1E1E1E),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: priorityColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(
+              _getReminderTypeIcon(reminder.type),
+              color: priorityColor,
+              size: 16,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  reminder.title,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    decoration: reminder.completed ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.schedule,
+                      size: 12,
+                      color: priorityColor,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      reminder.formattedDueDate,
+                      style: TextStyle(
+                        color: priorityColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    if (reminder.recurring) ...[
+                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.repeat,
+                        size: 12,
+                        color: Colors.grey[500],
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+          if (!reminder.completed) ...[
+            IconButton(
+              onPressed: () => _completeReminder(context, ref, reminder),
+              icon: const Icon(Icons.check_circle_outline),
+              color: Colors.green,
+              iconSize: 20,
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              padding: EdgeInsets.zero,
+            ),
+          ] else ...[
+            Icon(
+              Icons.check_circle,
+              color: Colors.green,
+              size: 20,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Color _getReminderPriorityColor(ReminderSimple reminder) {
+    if (reminder.completed) return Colors.grey;
+    if (reminder.isOverdue) return Colors.red;
+    if (reminder.isDueToday) return Colors.orange;
+    if (reminder.isDueTomorrow) return Colors.blue;
+    return Colors.grey[400]!;
+  }
+
+  IconData _getReminderTypeIcon(String type) {
+    switch (type) {
+      case 'watering':
+        return Icons.water_drop;
+      case 'fertilizing':
+        return Icons.eco;
+      case 'health_check':
+        return Icons.health_and_safety;
+      case 'repotting':
+        return Icons.agriculture;
+      case 'custom':
+        return Icons.star;
+      default:
+        return Icons.schedule;
+    }
+  }
+
+  Future<void> _showCreateReminderDialog(BuildContext context, WidgetRef ref, Plant plant) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => CreateReminderDialog(plant: plant),
+    );
+    
+    if (result == true) {
+      // Refresh reminders after successful creation
+      ref.refresh(plantRemindersProvider(plant.id));
+    }
+  }
+
+  Future<void> _completeReminder(BuildContext context, WidgetRef ref, ReminderSimple reminder) async {
+    try {
+      await ref.read(remindersNotifierProvider.notifier).completeReminder(reminder.id);
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Completed: ${reminder.title}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to complete reminder: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   String _formatDate(DateTime dateTime) {

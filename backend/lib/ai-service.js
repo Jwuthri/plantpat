@@ -63,7 +63,36 @@ class AIService {
               "season": "spring",
               "notes": "Use well-draining potting mix"
             }
-          }
+          },
+          "suggestedReminders": [
+            {
+              "type": "watering",
+              "title": "Water Plant",
+              "description": "Check soil moisture and water if needed",
+              "frequency": "weekly",
+              "daysInterval": 7,
+              "recurring": true,
+              "priority": "high"
+            },
+            {
+              "type": "fertilizing",
+              "title": "Fertilize Plant",
+              "description": "Apply diluted liquid fertilizer",
+              "frequency": "monthly", 
+              "daysInterval": 30,
+              "recurring": true,
+              "priority": "medium"
+            },
+            {
+              "type": "inspection",
+              "title": "Health Check",
+              "description": "Inspect for pests, diseases, and overall health",
+              "frequency": "weekly",
+              "daysInterval": 7,
+              "recurring": true,
+              "priority": "medium"
+            }
+          ]
         }
       `;
 
@@ -160,7 +189,36 @@ class AIService {
               "Maintain consistent watering",
               "Provide adequate air circulation"
             ]
-          }
+          },
+          "suggestedReminders": [
+            {
+              "type": "treatment",
+              "title": "Apply Treatment",
+              "description": "Apply fungicide or recommended treatment",
+              "frequency": "weekly",
+              "daysInterval": 7,
+              "recurring": true,
+              "priority": "high"
+            },
+            {
+              "type": "monitoring",
+              "title": "Monitor Recovery",
+              "description": "Check for improvement or spread of issues",
+              "frequency": "daily",
+              "daysInterval": 1,
+              "recurring": true,
+              "priority": "high"
+            },
+            {
+              "type": "inspection",
+              "title": "Health Check",
+              "description": "Thorough inspection for new issues",
+              "frequency": "weekly",
+              "daysInterval": 7,
+              "recurring": true,
+              "priority": "medium"
+            }
+          ]
         }
       `;
 

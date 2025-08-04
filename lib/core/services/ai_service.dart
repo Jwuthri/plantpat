@@ -3,11 +3,12 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
+import '../config/api_config.dart';
 import 'user_profile_service.dart';
 import '../../features/plants/models/plant.dart';
+import '../../features/reminders/models/suggested_reminder.dart';
 
 class AIService {
-  static const String _backendUrl = 'http://192.168.1.106:3000'; // Use local IP for device testing
   
   final Dio _dio = Dio();
   final Logger _logger = Logger();
@@ -30,11 +31,11 @@ class AIService {
         'imageType': 'image/jpeg',
       };
 
-      _logger.i('📱 [FLUTTER-AI] 🚀 Calling backend API: $_backendUrl/api/ai/identify');
+      _logger.i('📱 [FLUTTER-AI] 🚀 Calling backend API: ${ApiConfig.aiIdentify}');
       final startTime = DateTime.now();
       
       final response = await _dio.post(
-        '$_backendUrl/api/ai/identify',
+        ApiConfig.aiIdentify,
         data: requestBody,
         options: Options(
           headers: {'Content-Type': 'application/json'},
@@ -66,6 +67,7 @@ class AIService {
             description: _buildDescriptionFromBackend(aiResult),
             careInfo: _mapCareInfoFromBackend(careInst),
             tags: _generateTagsFromBackend(aiResult),
+            suggestedReminders: _parseSuggestedReminders(aiResult['suggestedReminders']),
           );
           
           _logger.i('📱 [FLUTTER-AI] 🔍 Mapped result: name="${result.name}", sci="${result.scientificName}", conf=${result.confidence}, category="${result.category}"');
@@ -78,6 +80,12 @@ class AIService {
           _logger.i('📱 [FLUTTER-AI] 📷 Created base64 image length: ${base64Image.length}');
           final plantId = await _savePlantToDatabase(result, imageData: base64Image);
           _logger.d('📱 [FLUTTER-AI] 💾 Auto-saved plant with ID: $plantId');
+          
+          // Note: Suggested reminders are included in the result
+          // The UI layer will handle creating the actual reminders using AutoReminderService
+          if (result.suggestedReminders.isNotEmpty) {
+            _logger.i('📱 [FLUTTER-AI] 🔔 Plant has ${result.suggestedReminders.length} suggested reminders');
+          }
           
           return result;
         } else {
@@ -107,11 +115,11 @@ class AIService {
         'plantContext': plantContext,
       };
 
-      _logger.i('📱 [FLUTTER-AI] 🚀 Calling backend API: $_backendUrl/api/ai/diagnose');
+      _logger.i('📱 [FLUTTER-AI] 🚀 Calling backend API: ${ApiConfig.aiDiagnose}');
       final startTime = DateTime.now();
       
       final response = await _dio.post(
-        '$_backendUrl/api/ai/diagnose',
+        ApiConfig.aiDiagnose,
         data: requestBody,
         options: Options(
           headers: {'Content-Type': 'application/json'},
@@ -133,6 +141,7 @@ class AIService {
             overallHealthScore: _mapHealthScoreFromBackend(aiResult['healthAssessment']),
             detectedIssues: _mapIssuesFromBackend(aiResult['healthAssessment']['issues'] ?? []),
             generalRecommendations: List<String>.from(aiResult['careRecommendations']['preventive'] ?? []),
+            suggestedReminders: _parseSuggestedReminders(aiResult['suggestedReminders']),
           );
           
           _logger.i('📱 [FLUTTER-AI] ✅ Plant diagnosis successful! (health: ${result.overallHealthScore}, issues: ${result.detectedIssues.length})');
@@ -140,6 +149,12 @@ class AIService {
           // Save diagnosis to database
           final base64Image = base64Encode(imageBytes);
           await _saveDiagnosisToDatabase(aiResult, result, plantId: plantId, imageData: base64Image);
+          
+          // Note: Suggested reminders are included in the result
+          // The UI layer will handle creating the actual reminders using AutoReminderService
+          if (result.suggestedReminders.isNotEmpty) {
+            _logger.i('📱 [FLUTTER-AI] 🔔 Diagnosis has ${result.suggestedReminders.length} suggested reminders');
+          }
           
           return result;
         } else {
@@ -249,6 +264,29 @@ class AIService {
     }).toList();
   }
 
+  List<SuggestedReminder> _parseSuggestedReminders(dynamic suggestedRemindersData) {
+    if (suggestedRemindersData == null) return [];
+    
+    try {
+      final remindersList = suggestedRemindersData as List<dynamic>;
+      return remindersList.map((reminderData) {
+        final data = reminderData as Map<String, dynamic>;
+        return SuggestedReminder(
+          type: data['type'] ?? 'general',
+          title: data['title'] ?? 'Care Reminder',
+          description: data['description'] ?? 'Take care of your plant',
+          frequency: data['frequency'] ?? 'weekly',
+          daysInterval: data['daysInterval'] ?? 7,
+          recurring: data['recurring'] ?? true,
+          priority: data['priority'] ?? 'medium',
+        );
+      }).toList();
+    } catch (e) {
+      _logger.w('📱 [FLUTTER-AI] ⚠️ Failed to parse suggested reminders: $e');
+      return [];
+    }
+  }
+
   // Save identified plant to database - returns the saved plant ID
   Future<String?> _savePlantToDatabase(PlantIdentificationResult plant, {String? imageData}) async {
     try {
@@ -278,7 +316,7 @@ class AIService {
       };
 
       final response = await _dio.post(
-        '$_backendUrl/api/plants/save',
+        ApiConfig.plantsSave,
         data: requestBody,
         options: Options(
           headers: {'Content-Type': 'application/json'},
@@ -367,7 +405,7 @@ class AIService {
       };
 
       final response = await _dio.post(
-        '$_backendUrl/api/diagnoses/save',
+        ApiConfig.diagnosesSave,
         data: requestBody,
         options: Options(
           headers: {'Content-Type': 'application/json'},
@@ -399,6 +437,7 @@ class PlantIdentificationResult {
   final String description;
   final Map<String, dynamic> careInfo;
   final List<String> tags;
+  final List<SuggestedReminder> suggestedReminders;
 
   PlantIdentificationResult({
     required this.name,
@@ -408,6 +447,7 @@ class PlantIdentificationResult {
     required this.description,
     required this.careInfo,
     required this.tags,
+    this.suggestedReminders = const [],
   });
 
   factory PlantIdentificationResult.fromJson(Map<String, dynamic> json) {
@@ -419,6 +459,9 @@ class PlantIdentificationResult {
       description: json['description'] ?? '',
       careInfo: json['careInfo'] ?? {},
       tags: List<String>.from(json['tags'] ?? []),
+      suggestedReminders: (json['suggestedReminders'] as List<dynamic>?)
+          ?.map((reminder) => SuggestedReminder.fromJson(reminder as Map<String, dynamic>))
+          .toList() ?? [],
     );
   }
 }
@@ -427,11 +470,13 @@ class PlantDiagnosisResult {
   final double overallHealthScore;
   final List<Map<String, dynamic>> detectedIssues;
   final List<String> generalRecommendations;
+  final List<SuggestedReminder> suggestedReminders;
 
   PlantDiagnosisResult({
     required this.overallHealthScore,
     required this.detectedIssues,
     required this.generalRecommendations,
+    this.suggestedReminders = const [],
   });
 
   factory PlantDiagnosisResult.fromJson(Map<String, dynamic> json) {
@@ -439,6 +484,9 @@ class PlantDiagnosisResult {
       overallHealthScore: (json['overallHealthScore'] ?? 0.0).toDouble(),
       detectedIssues: List<Map<String, dynamic>>.from(json['detectedIssues'] ?? []),
       generalRecommendations: List<String>.from(json['generalRecommendations'] ?? []),
+      suggestedReminders: (json['suggestedReminders'] as List<dynamic>?)
+          ?.map((reminder) => SuggestedReminder.fromJson(reminder as Map<String, dynamic>))
+          .toList() ?? [],
     );
   }
 } 

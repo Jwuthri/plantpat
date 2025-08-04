@@ -7,6 +7,7 @@ import 'dart:convert';
 
 import '../../../core/services/ai_service.dart';
 import '../../plants/models/plant.dart';
+import '../../reminders/services/auto_reminder_service.dart';
 
 class CameraController extends StateNotifier<CameraState> {
   CameraController(this.ref) : super(const CameraState());
@@ -112,6 +113,21 @@ class CameraController extends StateNotifier<CameraState> {
         identificationResult: result,
         identifiedPlant: plant,
       );
+
+      // Auto-create reminders from AI suggestions
+      if (result.suggestedReminders.isNotEmpty) {
+        _logger.i('📸 [CAMERA] Creating ${result.suggestedReminders.length} suggested reminders');
+        try {
+          final createdReminderIds = await AutoReminderService.createRemindersFromSuggestions(
+            ref,
+            plant.id,
+            result.suggestedReminders,
+          );
+          _logger.i('📸 [CAMERA] ✅ Created ${createdReminderIds.length} automatic reminders');
+        } catch (e) {
+          _logger.w('📸 [CAMERA] ⚠️ Failed to create automatic reminders: $e');
+        }
+      }
     } catch (e) {
       _logger.e('Error identifying plant: $e');
       state = state.copyWith(
@@ -145,6 +161,21 @@ class CameraController extends StateNotifier<CameraState> {
         diagnosisResult: result,
         diagnosisImageData: base64Image,
       );
+
+      // Auto-create reminders from AI diagnosis suggestions
+      if (result.suggestedReminders.isNotEmpty) {
+        _logger.i('📸 [CAMERA] Creating ${result.suggestedReminders.length} diagnosis-based reminders');
+        try {
+          final createdReminderIds = await AutoReminderService.createRemindersFromSuggestions(
+            ref,
+            state.selectedPlant!.id,
+            result.suggestedReminders,
+          );
+          _logger.i('📸 [CAMERA] ✅ Created ${createdReminderIds.length} diagnosis reminders');
+        } catch (e) {
+          _logger.w('📸 [CAMERA] ⚠️ Failed to create diagnosis reminders: $e');
+        }
+      }
     } catch (e) {
       _logger.e('Error diagnosing plant: $e');
       state = state.copyWith(

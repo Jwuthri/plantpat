@@ -252,6 +252,54 @@ class DiagnosisResult extends StatelessWidget {
             const SizedBox(height: 24),
           ],
           
+          // Auto-Created Reminders Notification
+          if (result.suggestedReminders.isNotEmpty)
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2196F3).withOpacity(0.1),
+                border: Border.all(
+                  color: const Color(0xFF2196F3).withOpacity(0.3),
+                  width: 1,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.schedule,
+                    color: Color(0xFF2196F3),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Care Reminders Created',
+                          style: TextStyle(
+                            color: Color(0xFF2196F3),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${result.suggestedReminders.length} automatic reminders added: ${result.suggestedReminders.map((r) => r.type).join(', ')}',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          
           // Action Buttons
           Row(
             children: [
