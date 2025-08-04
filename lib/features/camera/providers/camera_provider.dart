@@ -7,7 +7,10 @@ import 'dart:convert';
 
 import '../../../core/services/ai_service.dart';
 import '../../plants/models/plant.dart';
+import '../../plants/providers/plants_provider.dart';
 import '../../reminders/services/auto_reminder_service.dart';
+import '../../reminders/providers/reminders_provider.dart';
+import '../../diagnosis/providers/diagnosis_provider.dart';
 
 class CameraController extends StateNotifier<CameraState> {
   CameraController(this.ref) : super(const CameraState());
@@ -114,20 +117,7 @@ class CameraController extends StateNotifier<CameraState> {
         identifiedPlant: plant,
       );
 
-      // Auto-create reminders from AI suggestions
-      if (result.suggestedReminders.isNotEmpty) {
-        _logger.i('📸 [CAMERA] Creating ${result.suggestedReminders.length} suggested reminders');
-        try {
-          final createdReminderIds = await AutoReminderService.createRemindersFromSuggestions(
-            ref,
-            plant.id,
-            result.suggestedReminders,
-          );
-          _logger.i('📸 [CAMERA] ✅ Created ${createdReminderIds.length} automatic reminders');
-        } catch (e) {
-          _logger.w('📸 [CAMERA] ⚠️ Failed to create automatic reminders: $e');
-        }
-      }
+      _logger.i('📸 [CAMERA] Plant identified: ${plant.name}. Reminders will be created after saving.');
     } catch (e) {
       _logger.e('Error identifying plant: $e');
       state = state.copyWith(
@@ -162,6 +152,10 @@ class CameraController extends StateNotifier<CameraState> {
         diagnosisImageData: base64Image,
       );
 
+      // Refresh diagnosis provider to show new diagnosis in plant detail screen
+      ref.read(diagnosisNotifierProvider.notifier).refreshDiagnoses();
+      _logger.i('📸 [CAMERA] Refreshed diagnosis provider after saving diagnosis');
+
       // Auto-create reminders from AI diagnosis suggestions
       if (result.suggestedReminders.isNotEmpty) {
         _logger.i('📸 [CAMERA] Creating ${result.suggestedReminders.length} diagnosis-based reminders');
@@ -172,6 +166,10 @@ class CameraController extends StateNotifier<CameraState> {
             result.suggestedReminders,
           );
           _logger.i('📸 [CAMERA] ✅ Created ${createdReminderIds.length} diagnosis reminders');
+          
+          // Refresh reminders provider to show new reminders
+          ref.read(remindersNotifierProvider.notifier).refreshReminders();
+          _logger.i('📸 [CAMERA] Refreshed reminders provider after creating diagnosis reminders');
         } catch (e) {
           _logger.w('📸 [CAMERA] ⚠️ Failed to create diagnosis reminders: $e');
         }
@@ -201,6 +199,31 @@ class CameraController extends StateNotifier<CameraState> {
       );
       
       _logger.i('Plant saved successfully with ID: $savedPlantId');
+
+      // Refresh plants provider to show new plant in "My Plants" screen
+      ref.read(plantsNotifierProvider.notifier).refreshPlants();
+      _logger.i('📸 [CAMERA] Refreshed plants provider after saving plant');
+
+      // Now create auto-reminders using the saved plant ID
+      final identificationResult = state.identificationResult;
+      if (identificationResult != null && identificationResult.suggestedReminders.isNotEmpty) {
+        _logger.i('📸 [CAMERA] Creating ${identificationResult.suggestedReminders.length} suggested reminders for saved plant');
+        try {
+          final createdReminderIds = await AutoReminderService.createRemindersFromSuggestions(
+            ref,
+            savedPlantId, // Use the actual saved plant ID from database
+            identificationResult.suggestedReminders,
+          );
+          _logger.i('📸 [CAMERA] ✅ Created ${createdReminderIds.length} automatic reminders for saved plant');
+          
+          // Refresh reminders provider to show new reminders
+          ref.read(remindersNotifierProvider.notifier).refreshReminders();
+          _logger.i('📸 [CAMERA] Refreshed reminders provider after creating plant reminders');
+        } catch (e) {
+          _logger.w('📸 [CAMERA] ⚠️ Failed to create automatic reminders: $e');
+          // Don't fail the save operation if reminders fail
+        }
+      }
     } catch (e) {
       _logger.e('Error saving plant: $e');
       state = state.copyWith(

@@ -152,13 +152,51 @@ class _PlantCard extends ConsumerWidget {
           children: [
             Expanded(
               flex: 3,
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                  color: Colors.grey[100],
-                ),
-                child: _buildPlantImage(),
+              child: Stack(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                      color: Colors.grey[100],
+                    ),
+                    child: _buildPlantImage(),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: PopupMenuButton<String>(
+                      onSelected: (value) {
+                        if (value == 'delete') {
+                          _showDeleteConfirmation(context, ref);
+                        }
+                      },
+                      icon: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.more_vert,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      itemBuilder: (BuildContext context) => [
+                        const PopupMenuItem<String>(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete, color: Colors.red),
+                              SizedBox(width: 8),
+                              Text('Delete Plant'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
             Expanded(
@@ -289,8 +327,8 @@ class _PlantCard extends ConsumerWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppTheme.plantGreen.withOpacity(0.1),
-            AppTheme.plantGreen.withOpacity(0.3),
+            AppTheme.plantGreen.withValues(alpha: 0.1),
+            AppTheme.plantGreen.withValues(alpha: 0.3),
           ],
         ),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
@@ -309,5 +347,54 @@ class _PlantCard extends ConsumerWidget {
     if (confidence >= 0.8) return Colors.green;
     if (confidence >= 0.6) return Colors.orange;
     return Colors.red;
+  }
+
+  void _showDeleteConfirmation(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Plant'),
+          content: Text(
+            'Are you sure you want to delete "${plant.name}"? This action cannot be undone.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                try {
+                  await ref.read(plantsNotifierProvider.notifier).deletePlant(plant.id);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('${plant.name} has been deleted'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Failed to delete plant'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
   }
 } 

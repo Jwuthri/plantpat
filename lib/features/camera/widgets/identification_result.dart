@@ -222,7 +222,7 @@ class IdentificationResult extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Care Reminders Created',
+                            'Care Reminders Ready',
                             style: TextStyle(
                               color: Color(0xFF2196F3),
                               fontWeight: FontWeight.w600,
@@ -231,11 +231,13 @@ class IdentificationResult extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '${result.suggestedReminders.length} automatic reminders added: ${result.suggestedReminders.map((r) => r.type).join(', ')}',
+                            '${result.suggestedReminders.length} reminders will be created when you save: ${result.suggestedReminders.map((r) => r.type).join(', ')}',
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 12,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
