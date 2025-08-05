@@ -24,14 +24,42 @@ module.exports = async (req, res) => {
   }
 
   try {
-    console.log('🌱 [PLANTS-LIST] Fetching plants (no auth for now)...');
+    // Get profile_id from query parameter
+    const profileId = req.query.profile_id;
     
-    // For now, return empty list for testing - no authentication required
-    console.log('🌱 [PLANTS-LIST] ✅ Returning empty plants list');
+    if (!profileId) {
+      return res.status(400).json({
+        success: false,
+        message: 'profile_id query parameter is required'
+      });
+    }
+
+    console.log('🌱 [PLANTS-LIST] Fetching plants for profile:', profileId);
+    
+    // Get Supabase client
+    const supabase = getSupabase();
+
+    // Fetch plants for this specific profile_id
+    const { data: plants, error: plantsError } = await supabase
+      .from('plants')
+      .select('*')
+      .eq('is_active', true)
+      .eq('profile_id', profileId)
+      .order('created_at', { ascending: false });
+
+    if (plantsError) {
+      console.error('🌱 [PLANTS-LIST] Database error:', plantsError.message);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to fetch plants'
+      });
+    }
+
+    console.log('🌱 [PLANTS-LIST] ✅ Found', plants?.length || 0, 'plants for profile:', profileId);
 
     res.status(200).json({
       success: true,
-      plants: []
+      plants: plants || []
     });
 
   } catch (error) {

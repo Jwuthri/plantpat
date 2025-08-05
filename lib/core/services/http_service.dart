@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 
 import '../config/api_config.dart';
+import 'user_profile_service.dart';
 
 class HttpService {
   static final HttpService _instance = HttpService._internal();
@@ -18,17 +19,11 @@ class HttpService {
     _authToken = token;
   }
 
-  // Get headers with auth if available
+  // Get headers - no auth for now
   Map<String, String> get _headers {
-    final headers = <String, String>{
+    return <String, String>{
       'Content-Type': 'application/json',
     };
-    
-    if (_authToken != null) {
-      headers['Authorization'] = 'Bearer $_authToken';
-    }
-    
-    return headers;
   }
 
   // Generic GET request
@@ -173,7 +168,11 @@ class HttpService {
 
   // Plant methods
   Future<List<dynamic>> getPlants() async {
-    final result = await get(ApiConfig.plantsListEndpoint);
+    // Get the device profile ID
+    final userProfileService = UserProfileService();
+    final profileId = await userProfileService.getProfileId();
+    
+    final result = await get('${ApiConfig.plantsListEndpoint}?profile_id=$profileId');
     return result['plants'] ?? [];
   }
 
@@ -183,7 +182,11 @@ class HttpService {
 
   // Diagnosis methods
   Future<List<dynamic>> getDiagnoses() async {
-    final result = await get(ApiConfig.diagnosesListEndpoint);
+    // Get the device profile ID
+    final userProfileService = UserProfileService();
+    final profileId = await userProfileService.getProfileId();
+    
+    final result = await get('${ApiConfig.diagnosesListEndpoint}?profile_id=$profileId');
     return result['diagnoses'] ?? [];
   }
   

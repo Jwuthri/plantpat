@@ -24,14 +24,50 @@ module.exports = async (req, res) => {
   }
 
   try {
-    console.log('🩺 [DIAGNOSES-LIST] Fetching diagnoses (no auth for now)...');
+    // Get profile_id from query parameter
+    const profileId = req.query.profile_id;
     
-    // For now, return empty list for testing - no authentication required
-    console.log('🩺 [DIAGNOSES-LIST] ✅ Returning empty diagnoses list');
+    if (!profileId) {
+      return res.status(400).json({
+        success: false,
+        message: 'profile_id query parameter is required'
+      });
+    }
+
+    console.log('🩺 [DIAGNOSES-LIST] Fetching diagnoses for profile:', profileId);
+    
+    // Get Supabase client
+    const supabase = getSupabase();
+
+    // Fetch diagnoses for this specific profile_id
+    const { data: diagnoses, error: diagnosesError } = await supabase
+      .from('diagnoses')
+      .select(`
+        *,
+        plants:plant_id (
+          id,
+          name,
+          species,
+          scientific_name,
+          confidence
+        )
+      `)
+      .eq('profile_id', profileId)
+      .order('created_at', { ascending: false });
+
+    if (diagnosesError) {
+      console.error('🩺 [DIAGNOSES-LIST] Database error:', diagnosesError.message);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to fetch diagnoses'
+      });
+    }
+
+    console.log('🩺 [DIAGNOSES-LIST] ✅ Found', diagnoses?.length || 0, 'diagnoses for profile:', profileId);
 
     res.status(200).json({
       success: true,
-      diagnoses: []
+      diagnoses: diagnoses || []
     });
 
   } catch (error) {
