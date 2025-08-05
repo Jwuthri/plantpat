@@ -1,0 +1,1 @@
+ /Users/julienwuthrich/GitHub/plantpal/.dart_tool/flutter_build/58ddfd871c78d9807e374b45b3b81ebf/native_assets.json: 
