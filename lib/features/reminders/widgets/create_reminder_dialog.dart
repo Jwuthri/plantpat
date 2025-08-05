@@ -21,6 +21,7 @@ class _CreateReminderDialogState extends ConsumerState<CreateReminderDialog> {
   
   String _selectedType = 'watering';
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
+  TimeOfDay _selectedTime = const TimeOfDay(hour: 9, minute: 0);
   bool _isRecurring = false;
   String _recurringInterval = 'weekly';
   bool _isLoading = false;
@@ -205,6 +206,35 @@ class _CreateReminderDialogState extends ConsumerState<CreateReminderDialog> {
                       ),
                       const SizedBox(height: 16),
                       
+                      // Due Time
+                      Text(
+                        'Due Time',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: () => _selectTime(context),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey[400]!),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.access_time, size: 20, color: AppTheme.plantGreen),
+                              const SizedBox(width: 8),
+                              Text(_formatTime(_selectedTime)),
+                              const Spacer(),
+                              Icon(Icons.arrow_drop_down, color: Colors.grey[600]),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      
                       // Recurring
                       Row(
                         children: [
@@ -312,8 +342,27 @@ class _CreateReminderDialogState extends ConsumerState<CreateReminderDialog> {
     }
   }
 
+  Future<void> _selectTime(BuildContext context) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime,
+    );
+    
+    if (picked != null) {
+      setState(() {
+        _selectedTime = picked;
+      });
+    }
+  }
+
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
+  }
+
+  String _formatTime(TimeOfDay time) {
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
   }
 
   String _getDefaultTitle(String type) {
@@ -365,7 +414,13 @@ class _CreateReminderDialogState extends ConsumerState<CreateReminderDialog> {
         description: _descriptionController.text.trim().isEmpty 
           ? null 
           : _descriptionController.text.trim(),
-        dueDate: _selectedDate,
+        dueDate: DateTime(
+          _selectedDate.year,
+          _selectedDate.month,
+          _selectedDate.day,
+          _selectedTime.hour,
+          _selectedTime.minute,
+        ),
         recurring: _isRecurring,
         recurringInterval: _isRecurring ? _recurringInterval : null,
       );

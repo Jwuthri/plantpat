@@ -146,12 +146,40 @@ class NotificationService {
         iOS: iosDetails,
       );
 
+      // Convert to timezone-aware datetime
+      final scheduledDateTime = _convertToTZDateTime(reminder.dueDate);
+      final now = tz.TZDateTime.now(tz.local);
+      
+      _logger.i('🔔 [NOTIFICATIONS] 🕐 Current time: $now');
+      _logger.i('🔔 [NOTIFICATIONS] 🎯 Scheduled time: $scheduledDateTime');
+      _logger.i('🔔 [NOTIFICATIONS] ⏰ Time difference: ${scheduledDateTime.difference(now).inMinutes} minutes');
+      
+      // Check if scheduled time is in the past
+      if (scheduledDateTime.isBefore(now)) {
+        _logger.w('🔔 [NOTIFICATIONS] ⚠️ Cannot schedule notification in the past! Scheduling for 1 minute from now instead.');
+        final fallbackTime = now.add(const Duration(minutes: 1));
+        _logger.i('🔔 [NOTIFICATIONS] 🔄 Fallback time: $fallbackTime');
+        
+        await _notifications.zonedSchedule(
+          reminder.id.hashCode,
+          '🌱 ${reminder.typeDisplayName} Time!',
+          '${reminder.plantName} needs ${reminder.typeDisplayName.toLowerCase()}',
+          fallbackTime,
+          notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation: 
+              UILocalNotificationDateInterpretation.absoluteTime,
+          payload: reminder.id,
+        );
+        return;
+      }
+      
       // Schedule the notification
       await _notifications.zonedSchedule(
         reminder.id.hashCode, // Use reminder ID hash as notification ID
         '🌱 ${reminder.typeDisplayName} Time!',
         '${reminder.plantName} needs ${reminder.typeDisplayName.toLowerCase()}',
-        _convertToTZDateTime(reminder.dueDate),
+        scheduledDateTime,
         notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation: 
@@ -210,11 +238,18 @@ class NotificationService {
     return filePath;
   }
 
-  /// Convert DateTime to TZDateTime (simplified for now)
+  /// Convert DateTime to TZDateTime with proper local timezone handling
   static tz.TZDateTime _convertToTZDateTime(DateTime dateTime) {
-    // For now, using a simple conversion
-    // In production, you might want to use timezone package
-    return tz.TZDateTime.from(dateTime, tz.local);
+    // Create TZDateTime in local timezone with exact date/time components
+    return tz.TZDateTime(
+      tz.local,
+      dateTime.year,
+      dateTime.month,
+      dateTime.day,
+      dateTime.hour,
+      dateTime.minute,
+      dateTime.second,
+    );
   }
 
   /// Request notification permissions (call on app start)
@@ -231,7 +266,23 @@ class NotificationService {
             critical: false,
           );
       
-      _logger.i('🔔 [NOTIFICATIONS] iOS permissions requested successfully');
+      _logger.i('🔔 [NOTIFICATIONS] iOS permissions result: $result');
+      
+      // Test notification to verify permissions work
+      if (result == true) {
+        await _notifications.show(
+          999999,
+          '🌱 PlantPal Ready!',
+          'Notifications are working! You\'ll receive plant care reminders.',
+          const NotificationDetails(
+            iOS: DarwinNotificationDetails(
+              presentAlert: true,
+              presentSound: true,
+              presentBadge: true,
+            ),
+          ),
+        );
+      }
       
       return result ?? false;
     } else if (Platform.isAndroid) {
