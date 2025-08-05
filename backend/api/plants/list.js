@@ -26,71 +26,16 @@ module.exports = async (req, res) => {
   try {
     console.log('🌱 [PLANTS-LIST] Fetching plants...');
     
-    // Get authorization header
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({
-        success: false,
-        message: 'No authorization token provided'
-      });
-    }
+    // TODO: Add authentication back later
+    // For now, return empty list to test the connection
+    console.log('🌱 [PLANTS-LIST] ✅ Returning empty list for testing');
 
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-    
-    // Get Supabase client
-    const supabase = getSupabase();
-
-    // Verify the token and get user
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) {
-      console.error('🌱 [PLANTS-LIST] Auth error:', authError?.message);
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid or expired token'
-      });
-    }
-
-    console.log('🌱 [PLANTS-LIST] ✅ User authenticated:', user.email);
-
-    // Get user's profile to get profile_id
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('email', user.email)
-      .single();
-
-    if (profileError || !profileData) {
-      console.error('🌱 [PLANTS-LIST] Profile error:', profileError?.message);
-      return res.status(404).json({
-        success: false,
-        message: 'User profile not found'
-      });
-    }
-
-    const profileId = profileData.id;
-    console.log('🌱 [PLANTS-LIST] Profile ID:', profileId);
-
-    // Fetch plants for this user
-    const { data: plants, error: plantsError } = await supabase
-      .from('plants')
-      .select('*')
-      .eq('is_active', true)
-      .eq('profile_id', profileId)
-      .order('created_at', { ascending: false });
-
-    if (plantsError) {
-      console.error('🌱 [PLANTS-LIST] Database error:', plantsError.message);
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to fetch plants'
-      });
-    }
-
-    console.log('🌱 [PLANTS-LIST] ✅ Found', plants?.length || 0, 'plants');
+    // For now, return empty list for testing
+    console.log('🌱 [PLANTS-LIST] ✅ Returning empty plants list');
 
     res.status(200).json({
       success: true,
-      plants: plants || []
+      plants: []
     });
 
   } catch (error) {
