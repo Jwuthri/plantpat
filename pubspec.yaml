@@ -22,8 +22,7 @@ dependencies:
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0
   
-  # Backend & Database
-  supabase_flutter: ^2.0.2
+  # Backend & Database (removed supabase_flutter - using HTTP API only)
   
   # Navigation
   go_router: ^12.1.3

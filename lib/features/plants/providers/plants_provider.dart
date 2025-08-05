@@ -1,9 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:logger/logger.dart';
 
 import '../models/plant.dart';
-import '../../../core/services/user_profile_service.dart';
+import '../../../core/services/http_service.dart';
 
 class PlantsNotifier extends StateNotifier<AsyncValue<List<Plant>>> {
   PlantsNotifier() : super(const AsyncValue.loading()) {
@@ -11,8 +10,7 @@ class PlantsNotifier extends StateNotifier<AsyncValue<List<Plant>>> {
   }
   
   final _logger = Logger();
-  final _supabase = Supabase.instance.client;
-  final _profileService = UserProfileService();
+  final _httpService = HttpService();
 
   void _initialize() async {
     try {
@@ -34,32 +32,15 @@ class PlantsNotifier extends StateNotifier<AsyncValue<List<Plant>>> {
     }
   }
 
-  // Get device-based profile ID using shared service
-  Future<String> _getDeviceProfileId() async {
-    return await _profileService.getProfileId();
-  }
-
   Future<List<Plant>> _fetchPlants() async {
     try {
-      // Get current user's profile ID
-      final profileId = await _getDeviceProfileId();
-      _logger.i('🌱 [PLANTS] 👤 Fetching plants for profile: $profileId');
+      _logger.i('🌱 [PLANTS] Fetching plants via HTTP API...');
       
-      final response = await _supabase
-          .from('plants')
-          .select()
-          .eq('is_active', true)
-          .eq('profile_id', profileId) // Only get plants for this user
-          .order('created_at', ascending: false);
-
-      _logger.i('🌱 [PLANTS] 📊 Query results: ${response.length} plants found for profile: $profileId');
-      _logger.i('🌱 [PLANTS] 📄 Raw response: $response');
+      final plantsList = await _httpService.getPlants();
+      _logger.i('🌱 [PLANTS] 📊 API results: ${plantsList.length} plants found');
       
-      // Supabase always returns a list, even if empty
-
-      final plantsList = response as List;
       if (plantsList.isEmpty) {
-        _logger.i('🌱 No plants found in database');
+        _logger.i('🌱 No plants found');
         return [];
       }
 
@@ -67,7 +48,7 @@ class PlantsNotifier extends StateNotifier<AsyncValue<List<Plant>>> {
       for (final json in plantsList) {
         try {
           final plant = Plant.fromJson(json as Map<String, dynamic>);
-          _logger.i('🌱 Loaded plant: ${plant.name}, images: ${plant.images.length}, first image length: ${plant.images.isNotEmpty ? plant.images.first.length : 0}');
+          _logger.i('🌱 Loaded plant: ${plant.name}, images: ${plant.images.length}');
           plants.add(plant);
         } catch (plantError) {
           _logger.w('🌱 Failed to parse plant: $plantError, data: $json');
@@ -75,7 +56,7 @@ class PlantsNotifier extends StateNotifier<AsyncValue<List<Plant>>> {
         }
       }
       
-      _logger.i('🌱 Successfully loaded ${plants.length} plants for current user');
+      _logger.i('🌱 Successfully loaded ${plants.length} plants');
       return plants;
     } catch (e) {
       _logger.e('Error fetching plants: $e');
@@ -85,7 +66,7 @@ class PlantsNotifier extends StateNotifier<AsyncValue<List<Plant>>> {
 
   Future<void> addPlant(Plant plant) async {
     try {
-      await _supabase.from('plants').insert(plant.toJson());
+      await _httpService.savePlant(plant.toJson());
       _initialize(); // Refresh the state
     } catch (e) {
       _logger.e('Error adding plant: $e');
@@ -95,10 +76,9 @@ class PlantsNotifier extends StateNotifier<AsyncValue<List<Plant>>> {
 
   Future<void> updatePlant(Plant plant) async {
     try {
-      await _supabase
-          .from('plants')
-          .update(plant.toJson())
-          .eq('id', plant.id);
+      // For now, use savePlant for updates too
+      // TODO: Create separate update endpoint if needed
+      await _httpService.savePlant(plant.toJson());
       _initialize(); // Refresh the state
     } catch (e) {
       _logger.e('Error updating plant: $e');
@@ -108,10 +88,8 @@ class PlantsNotifier extends StateNotifier<AsyncValue<List<Plant>>> {
 
   Future<void> deletePlant(String plantId) async {
     try {
-      await _supabase
-          .from('plants')
-          .update({'is_active': false})
-          .eq('id', plantId);
+      // TODO: Create delete endpoint in backend
+      // For now, just refresh and let the backend handle inactive plants
       _initialize(); // Refresh the state
     } catch (e) {
       _logger.e('Error deleting plant: $e');

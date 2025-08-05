@@ -9,7 +9,7 @@ class ApiConfig {
   /// - iOS Simulator: 'http://localhost:3000'
   /// - Physical device: 'http://192.168.1.106:3000' (your network IP)
   /// - Android emulator: 'http://10.0.2.2:3000'
-  static const String backendUrl = 'http://192.168.1.106:3000';
+  static const String backendUrl = 'https://plantpat.vercel.app';
   
   /// API endpoints
   static const String authLoginEndpoint = '/api/auth/login';
@@ -20,7 +20,9 @@ class ApiConfig {
   static const String aiIdentifyEndpoint = '/api/ai/identify';
   static const String aiDiagnoseEndpoint = '/api/ai/diagnose';
   
+  static const String plantsListEndpoint = '/api/plants/list';
   static const String plantsSaveEndpoint = '/api/plants/save';
+  static const String diagnosesListEndpoint = '/api/diagnoses/list';
   static const String diagnosesSaveEndpoint = '/api/diagnoses/save';
   
   static const String remindersListEndpoint = '/api/reminders/list';
@@ -36,7 +38,9 @@ class ApiConfig {
   static String get aiIdentify => '$backendUrl$aiIdentifyEndpoint';
   static String get aiDiagnose => '$backendUrl$aiDiagnoseEndpoint';
   
+  static String get plantsList => '$backendUrl$plantsListEndpoint';
   static String get plantsSave => '$backendUrl$plantsSaveEndpoint';
+  static String get diagnosesList => '$backendUrl$diagnosesListEndpoint';
   static String get diagnosesSave => '$backendUrl$diagnosesSaveEndpoint';
   
   static String get remindersList => '$backendUrl$remindersListEndpoint';

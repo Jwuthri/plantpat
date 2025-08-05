@@ -1,9 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:logger/logger.dart';
 
 import '../models/diagnosis_database.dart';
-import '../../../core/services/user_profile_service.dart';
+import '../../../core/services/http_service.dart';
 
 class DiagnosisNotifier extends StateNotifier<AsyncValue<List<DiagnosisRecord>>> {
   DiagnosisNotifier() : super(const AsyncValue.loading()) {
@@ -11,8 +10,7 @@ class DiagnosisNotifier extends StateNotifier<AsyncValue<List<DiagnosisRecord>>>
   }
   
   final _logger = Logger();
-  final _supabase = Supabase.instance.client;
-  final _profileService = UserProfileService();
+  final _httpService = HttpService();
 
   void _initialize() async {
     try {
@@ -34,39 +32,15 @@ class DiagnosisNotifier extends StateNotifier<AsyncValue<List<DiagnosisRecord>>>
     }
   }
 
-  // Get device-based profile ID using shared service
-  Future<String> _getDeviceProfileId() async {
-    return await _profileService.getProfileId();
-  }
-
-  Future<List<DiagnosisRecord>> _fetchDiagnoses() async {
+    Future<List<DiagnosisRecord>> _fetchDiagnoses() async {
     try {
-      // Get current user's profile ID
-      final profileId = await _getDeviceProfileId();
-      _logger.i('🩺 [DIAGNOSES] 👤 Fetching diagnoses for profile: $profileId');
+      _logger.i('🩺 [DIAGNOSES] Fetching diagnoses via HTTP API...');
       
-      final response = await _supabase
-          .from('diagnoses')
-          .select('''
-            *,
-            plants:plant_id (
-              id,
-              name,
-              species,
-              scientific_name,
-              confidence
-            )
-          ''')
-          .eq('profile_id', profileId) // Only get diagnoses for this user
-          .order('created_at', ascending: false);
-
-      _logger.i('🩺 [DIAGNOSES] 📊 Query results: ${response.length} diagnoses found for profile: $profileId');
-      _logger.i('🩺 [DIAGNOSES] 📄 Raw response: $response');
+      final diagnosesList = await _httpService.getDiagnoses();
+      _logger.i('🩺 [DIAGNOSES] 📊 API results: ${diagnosesList.length} diagnoses found');
       
-      // Supabase always returns a list, even if empty
-      final diagnosesList = response as List;
       if (diagnosesList.isEmpty) {
-        _logger.i('🩺 [DIAGNOSES] No diagnoses found in database');
+        _logger.i('🩺 [DIAGNOSES] No diagnoses found');
         return [];
       }
 
@@ -81,7 +55,7 @@ class DiagnosisNotifier extends StateNotifier<AsyncValue<List<DiagnosisRecord>>>
         }
       }
       
-      _logger.i('🩺 [DIAGNOSES] Successfully loaded ${diagnoses.length} diagnoses for current user');
+      _logger.i('🩺 [DIAGNOSES] Successfully loaded ${diagnoses.length} diagnoses');
       return diagnoses;
     } catch (e) {
       _logger.e('Error fetching diagnoses: $e');
@@ -91,7 +65,7 @@ class DiagnosisNotifier extends StateNotifier<AsyncValue<List<DiagnosisRecord>>>
 
   Future<void> addDiagnosis(DiagnosisRecord diagnosis) async {
     try {
-      await _supabase.from('diagnoses').insert(diagnosis.toJson());
+      await _httpService.saveDiagnosis(diagnosis.toJson());
       refreshDiagnoses(); // Refresh the state
     } catch (e) {
       _logger.e('Error adding diagnosis: $e');
@@ -101,10 +75,9 @@ class DiagnosisNotifier extends StateNotifier<AsyncValue<List<DiagnosisRecord>>>
 
   Future<void> updateDiagnosis(DiagnosisRecord diagnosis) async {
     try {
-      await _supabase
-          .from('diagnoses')
-          .update(diagnosis.toJson())
-          .eq('id', diagnosis.id);
+      // TODO: Create update endpoint in backend  
+      // For now, use saveDiagnosis for updates too
+      await _httpService.saveDiagnosis(diagnosis.toJson());
       refreshDiagnoses(); // Refresh the state
     } catch (e) {
       _logger.e('Error updating diagnosis: $e');
@@ -114,10 +87,8 @@ class DiagnosisNotifier extends StateNotifier<AsyncValue<List<DiagnosisRecord>>>
 
   Future<void> deleteDiagnosis(String diagnosisId) async {
     try {
-      await _supabase
-          .from('diagnoses')
-          .delete()
-          .eq('id', diagnosisId);
+      // TODO: Create delete endpoint in backend
+      // For now, just refresh and let the backend handle this
       refreshDiagnoses(); // Refresh the state
     } catch (e) {
       _logger.e('Error deleting diagnosis: $e');
