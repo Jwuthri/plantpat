@@ -24,13 +24,9 @@ module.exports = async (req, res) => {
   }
 
   try {
-    console.log('🌱 [PLANTS-LIST] Fetching plants...');
+    console.log('🌱 [PLANTS-LIST] Fetching plants (no auth for now)...');
     
-    // TODO: Add authentication back later
-    // For now, return empty list to test the connection
-    console.log('🌱 [PLANTS-LIST] ✅ Returning empty list for testing');
-
-    // For now, return empty list for testing
+    // For now, return empty list for testing - no authentication required
     console.log('🌱 [PLANTS-LIST] ✅ Returning empty plants list');
 
     res.status(200).json({
