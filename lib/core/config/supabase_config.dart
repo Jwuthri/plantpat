@@ -1,4 +1,14 @@
 class SupabaseConfig {
-  static const String url = 'https://hkaetjcybhoujobsjiqq.supabase.co';
-  static const String anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrYWV0amN5YmhvdWpvYnNqaXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM3Mjc1MjUsImV4cCI6MjA2OTMwMzUyNX0.ZVIA4ni9sYnkw3FnH40GazApCBGxQAWS3uSnr1BO6Ds';
+  static const String url = const String.fromEnvironment('SUPABASE_URL', defaultValue: '');
+  static const String anonKey = const String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: '');
+  
+  // Validation method to ensure keys are provided
+  static void validateConfig() {
+    if (url.isEmpty) {
+      throw Exception('SUPABASE_URL environment variable is required');
+    }
+    if (anonKey.isEmpty) {
+      throw Exception('SUPABASE_ANON_KEY environment variable is required');
+    }
+  }
 } 

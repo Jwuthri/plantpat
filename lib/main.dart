@@ -14,6 +14,9 @@ void main() async {
   // Initialize timezone data for scheduled notifications
   tz.initializeTimeZones();
   
+  // Validate configuration before initializing Supabase
+  SupabaseConfig.validateConfig();
+  
   await Supabase.initialize(
     url: SupabaseConfig.url,
     anonKey: SupabaseConfig.anonKey,
