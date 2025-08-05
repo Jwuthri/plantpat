@@ -243,36 +243,7 @@ class HomeScreen extends ConsumerWidget {
                 context.go('/reminders');
               },
             ),
-            const SizedBox(height: 12),
-            _CameraOptionTile(
-              title: 'Test Notification',
-              subtitle: 'Send a test notification to your phone',
-              icon: Icons.notification_add,
-              color: Colors.orange,
-              onTap: () async {
-                Navigator.pop(context);
-                try {
-                  await NotificationService.showTestNotification();
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('🔔 Test notification sent! Check your notification panel.'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('❌ Failed to send notification: $e'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                }
-              },
-            ),
+
             const SizedBox(height: 24),
           ],
         ),

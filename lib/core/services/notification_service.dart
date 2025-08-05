@@ -244,32 +244,5 @@ class NotificationService {
     return true;
   }
 
-  /// Show immediate notification (for testing) - WORKING VERSION!
-  static Future<void> showTestNotification() async {
-    _logger.i('🔔 [NOTIFICATIONS] 🎉 Using WORKING scheduled approach!');
 
-    try {
-      // Use scheduled approach for "immediate" notification (1 second delay)
-      await _notifications.zonedSchedule(
-        999,
-        '🌱 PlantPal Test',
-        'SUCCESS! Your notifications are working perfectly! 🎉',
-        tz.TZDateTime.now(tz.local).add(const Duration(seconds: 1)),
-        const NotificationDetails(
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentSound: true,
-            presentBadge: true,
-            sound: 'default',
-          ),
-        ),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      );
-      _logger.i('🔔 [NOTIFICATIONS] ✅ Working test notification scheduled!');
-    } catch (e) {
-      _logger.e('🔔 [NOTIFICATIONS] ❌ Test notification failed: $e');
-      rethrow;
-    }
-  }
 }

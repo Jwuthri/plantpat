@@ -31,6 +31,7 @@ class HttpService {
     try {
       final url = Uri.parse('${ApiConfig.backendUrl}$endpoint');
       _logger.i('🌐 GET: $url');
+      _logger.i('🌐 Endpoint passed: $endpoint');
       
       final response = await http.get(url, headers: _headers);
       return _handleResponse(response);
@@ -172,7 +173,11 @@ class HttpService {
     final userProfileService = UserProfileService();
     final profileId = await userProfileService.getProfileId();
     
-    final result = await get('${ApiConfig.plantsListEndpoint}?profile_id=$profileId');
+    _logger.i('🌱 [HTTP] Getting plants for profile: $profileId');
+    final url = '${ApiConfig.plantsListEndpoint}?profile_id=$profileId';
+    _logger.i('🌱 [HTTP] Full URL: $url');
+    
+    final result = await get(url);
     return result['plants'] ?? [];
   }
 
@@ -186,7 +191,11 @@ class HttpService {
     final userProfileService = UserProfileService();
     final profileId = await userProfileService.getProfileId();
     
-    final result = await get('${ApiConfig.diagnosesListEndpoint}?profile_id=$profileId');
+    _logger.i('🩺 [HTTP] Getting diagnoses for profile: $profileId');
+    final url = '${ApiConfig.diagnosesListEndpoint}?profile_id=$profileId';
+    _logger.i('🩺 [HTTP] Full URL: $url');
+    
+    final result = await get(url);
     return result['diagnoses'] ?? [];
   }
   
