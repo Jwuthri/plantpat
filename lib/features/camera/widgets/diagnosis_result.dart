@@ -40,183 +40,249 @@ class DiagnosisResult extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-          // Health Score Header
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  healthColor,
-                  healthColor.withOpacity(0.8),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: healthColor.withOpacity(0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'Plant Health Assessment',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SizedBox(
-                      width: 100,
-                      height: 100,
-                      child: CircularProgressIndicator(
-                        value: healthScore,
-                        strokeWidth: 8,
-                        backgroundColor: Colors.white.withOpacity(0.2),
-                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    ),
-                    Column(
-                      children: [
-                        Text(
-                          '${(healthScore * 100).toInt()}%',
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        Text(
-                          healthStatus,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.white70,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          
-          // Plant Information (if linked)
-          if (linkedPlant != null) ...[
+            // Main Health Assessment Card
             Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppTheme.plantGreen.withOpacity(0.8),
-                    AppTheme.plantGreen.withOpacity(0.6),
+                    const Color(0xFF2A2A2A),
+                    const Color(0xFF1E1E1E),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: AppTheme.plantGreen.withOpacity(0.3),
-                  width: 1,
+                  color: healthColor.withOpacity(0.3),
+                  width: 1.5,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Health Score Section
                   Row(
                     children: [
-                      Icon(
-                        Icons.link,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Linked to Saved Plant',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      // Health Score Circle
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              healthColor,
+                              healthColor.withOpacity(0.8),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: healthColor.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
+                        child: Column(
+                          children: [
+                            Text(
+                              '${(healthScore * 100).toInt()}%',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Text(
+                              healthStatus,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.white70,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      
+                      // Plant Info (if linked)
+                      Expanded(
+                        child: linkedPlant != null 
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.local_florist,
+                                    color: AppTheme.lightGreen,
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Linked Plant',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppTheme.lightGreen,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                linkedPlant!.name,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              if (linkedPlant!.scientificName?.isNotEmpty == true) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  linkedPlant!.scientificName!,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontStyle: FontStyle.italic,
+                                    color: Colors.white.withOpacity(0.7),
+                                  ),
+                                ),
+                              ],
+                              if (linkedPlant!.confidence != null) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Confidence: ${(linkedPlant!.confidence! * 100).toStringAsFixed(0)}%',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.white.withOpacity(0.6),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Plant Health Check',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Scan complete',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white.withOpacity(0.7),
+                                ),
+                              ),
+                            ],
+                          ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    linkedPlant!.name,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  if (linkedPlant!.scientificName?.isNotEmpty == true) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      linkedPlant!.scientificName!,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontStyle: FontStyle.italic,
-                        color: Colors.white.withOpacity(0.9),
+                  
+                  // Health Status Banner (for healthy plants)
+                  if (result.detectedIssues.isEmpty) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppTheme.successColor.withOpacity(0.2),
+                            AppTheme.successColor.withOpacity(0.1),
+                          ],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppTheme.successColor.withOpacity(0.3),
+                          width: 1,
+                        ),
                       ),
-                    ),
-                  ],
-                  if (linkedPlant!.confidence != null) ...[
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.verified,
-                          size: 16,
-                          color: Colors.white.withOpacity(0.8),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Confidence: ${(linkedPlant!.confidence! * 100).toStringAsFixed(0)}%',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.white.withOpacity(0.8),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.check_circle_outline,
+                            color: AppTheme.successColor,
+                            size: 24,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Plant Looks Healthy!',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.successColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'No significant issues detected. Keep up the good care!',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppTheme.successColor.withOpacity(0.8),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-          ],
-          
-          // Diagnosis Image (if available)
-          if (diagnosisImage != null) ...[
-            Container(
-              width: double.infinity,
-              height: 200,
-              margin: const EdgeInsets.only(bottom: 24),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppTheme.successColor.withOpacity(0.3),
-                  width: 1,
+            const SizedBox(height: 20),
+            
+            // Diagnosis Image (if available)
+            if (diagnosisImage != null) ...[
+              Container(
+                width: double.infinity,
+                height: 220,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.1),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: _buildDiagnosisImage(diagnosisImage!),
                 ),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: _buildDiagnosisImage(diagnosisImage!),
-              ),
-            ),
-          ],
+            ],
           
           // Issues Found
           if (result.detectedIssues.isNotEmpty) ...[
@@ -230,8 +296,6 @@ class DiagnosisResult extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ...result.detectedIssues.map((issue) => _IssueCard(issue: issue)),
-          ] else ...[
-            _HealthyPlantCard(),
           ],
           
           const SizedBox(height: 24),
@@ -552,60 +616,6 @@ class _TreatmentCard extends StatelessWidget {
               _BulletPoint(text: step, fontSize: 12)
             ),
           ],
-        ],
-      ),
-    );
-  }
-}
-
-class _HealthyPlantCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.successColor,
-            AppTheme.successColor.withOpacity(0.8),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.successColor.withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.check_circle,
-            size: 64,
-            color: Colors.white,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Plant Looks Healthy!',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'No significant issues detected. Keep up the good care!',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white70,
-            ),
-            textAlign: TextAlign.center,
-          ),
         ],
       ),
     );
